@@ -1,4 +1,6 @@
-# Smart Citizen API 
+# Smart Citizen API
+
+ 
 
 ### Requirements
 
@@ -10,7 +12,6 @@ pip install -r requirements.txt
 ```
 python app.py
 ```
-
 
 #### Author
 Mustafa Hastürk
