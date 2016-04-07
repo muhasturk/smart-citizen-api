@@ -5,15 +5,28 @@ from flask import Flask
 app = Flask(__name__)
 
 @app.route('/')
+def hello():
+    return """
+    <style> 
+    p {
+    color: red;
+    }
+    </style>
+    <p> Çalıştı </p>"""
+
+@app.route('/login')
 def rootWelcome():
-    return 'Smart Citizen Rocks!'
+    name = "Mustafa"
+    surname = "hasturk"
 
+    parameters = {
+    "name": name,
+    "surname": surname
+    }
+    
+    appJson = json.dumps(parameters)
+    return appJson
 
-
-@app.route('/api/v1/memberLogin')
-def memberLogin():
-    memberLoginJSON = Services.Login.getLoginJSON()
-    return memberLoginJSON
 
 if __name__ == '__main__':
     app.run(debug=True)
