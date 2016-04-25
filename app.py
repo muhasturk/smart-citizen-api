@@ -12,34 +12,35 @@ app.config['MYSQL_DATABASE_HOST'] = '127.0.0.1'
 app.config['MYSQL_DATABASE_CHARSET'] = 'utf8'
 mysql.init_app(app)
 
-users = [
-	{
-		'user_id' : 101,
-		'username' : 'Engin',
-		'surname' : 'Isik',
-		'email' : 'iskengin@gmail.com',
-		'password' : '12345'
-	},
-	{
-		'user_id' : 102,
-		'username' : 'Mustafa',
-		'surname' : 'Hasturk',
-		'email' : 'mustafa.hasturk@yandex.com',
-		'password' : 'cokgizli'
-	}
-]
-
 keysForLogin = ['email','password']
 keysForRegister = ['name','surname','email','password','phone','city','district']
 
-@app.route('/api/v1/memberLogin2', methods=['POST'])
-def memberLogin2():
-    if not request.json or not 'email' in request.json or not 'password' in request.json:
-        abort(400)
-    user = [user for user in users if user['email'] == request.json['email'] and user['password'] == request.json['password']]
-    if len(user) == 0:
-        return jsonify({'ServiceCode':'1', 'ExceptionMessage':'Record not found'})
-    return jsonify({'ServiceCode':'0','User': user[0]})
+
+def check_auth(email,password):
+    conn = mysql.connect()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM Users WHERE USR_email ='%s'" % (email))
+    r = [dict((cursor.description[i][0], value) \
+               for i, value in enumerate(row)) for row in cursor.fetchall()]
+
+    if r:
+        cursor.execute("SELECT USR_name as name, USR_surname as surname, USR_email as email, USR_password as password,\
+         USR_phone as phone, USR_city as city, USR_district as district \
+         FROM Users WHERE USR_email ='%s' and USR_password='%s' " % (email,password))
+        r = [dict((cursor.description[i][0], value) \
+               for i, value in enumerate(row)) for row in cursor.fetchall()]
+        cursor.connection.close()
+        if r:
+            result = {'data' : r[0], 'serviceCode' : 0, 'exception': None}
+            return jsonify(result)
+        else:
+            return jsonify({'serviceCode': '1', 'data': None , 'exception': {'exceptionCode':'1', 'exceptionMessage':'The password is incorrect'}})
+    else:
+        cursor.connection.close()
+        return jsonify({'serviceCode': '1', 'data': None , 'exception': {'exceptionCode':'2', 'exceptionMessage':'There is no user with email '+email}})
+
+
 
 @app.route('/api/v1/memberLogin', methods=['POST'])
 def memberLogin():
@@ -49,29 +50,11 @@ def memberLogin():
         if not key in request.json:
             abort(400)
 
-    conn = mysql.connect()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM Users WHERE USR_email ='%s'" % (request.json['email']))
-    r = [dict((cursor.description[i][0], value) \
-               for i, value in enumerate(row)) for row in cursor.fetchall()]
-
-    if r:
-        cursor.execute("SELECT * FROM Users WHERE USR_email ='%s' and USR_password='%s' " % (request.json['email'],request.json['password']))
-        r = [dict((cursor.description[i][0], value) \
-               for i, value in enumerate(row)) for row in cursor.fetchall()]
-        cursor.connection.close()
-        if r:
-            result = {'user' : r[0], 'ServiceCode' : 0}
-            return jsonify(result)
-        else:
-            return jsonify({'ServiceCode':'12', 'ServiceMessage':'The password is incorrect'})
-    else:
-        cursor.connection.close()
-        return jsonify({'ServiceCode':'11', 'ServiceMessage':'The e-mail not found'})
+    result = check_auth(request.json['email'],request.json['password'])
+    return result
 
 
-@app.route('/api/v1/memberRegister', methods=['POST'])
+@app.route('/api/v1/memberSignUp', methods=['POST'])
 def register():
     if not request.json:
         abort(400)
@@ -86,16 +69,17 @@ def register():
     r = [dict((cursor.description[i][0], value) \
                for i, value in enumerate(row)) for row in cursor.fetchall()]
     if r:
-        return jsonify({'ServiceCode':'1','ServiceMessage':'The entered e-mail has already been registered'})
+        return jsonify({'serviceCode':'1', 'data': None, 'exception':{'exceptionCode':'3', 'exceptionMessage':'This e-mail has already been registered'}})
     else:
         cursor.execute("INSERT INTO Users (USR_email,USR_name,USR_surname,USR_password,USR_phone,USR_city,USR_district) \
             VALUES ('%s','%s','%s','%s','%s','%s','%s');" % (request.json['email'],request.json['name'],request.json['surname'],\
                 request.json['password'],request.json['phone'],request.json['city'],request.json['district']))
         
         conn.commit()
+        result = check_auth(request.json['email'],request.json['password'])
         #id = cursor.lastrowid
         cursor.connection.close()
-        return jsonify({'ServiceCode':'0', 'ServiceMessage' : 'The record was added'})
+        return result
 
 
 @app.errorhandler(404)
@@ -107,5 +91,6 @@ def bad_request(error):
     return make_response(jsonify({'ErrorCode':'400','ErrorMessage':'Bad_Request'}),400)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    #app.run(debug=True)
+    host='0.0.0.0', 
 
