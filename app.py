@@ -162,6 +162,6 @@ def bad_request(error):
     return make_response(jsonify({'ErrorCode':'400','ErrorMessage':'Bad_Request'}),400)
 
 if __name__ == '__main__':
-    app.run(debug=True)
-    #host='0.0.0.0', 
+    #app.run(debug=True)
+    host='0.0.0.0', 
 
