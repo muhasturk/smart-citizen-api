@@ -1,2 +1,5 @@
 flask
-flaskext.mysql
+Flask-MySQL
+Flask-RESTful
+Flask-SQLAlchemy
+MySQL-python
