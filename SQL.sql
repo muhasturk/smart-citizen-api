@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.24)
 # Database: smart_citizen
-# Generation Time: 2016-04-28 15:05:56 +0000
+# Generation Time: 2016-05-03 18:51:40 +0000
 # ************************************************************
 
 
@@ -248,8 +248,8 @@ CREATE TABLE `Problem` (
   CONSTRAINT `problem_ibfk_1` FOREIGN KEY (`PRB_category`) REFERENCES `Category` (`CAT_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `problem_ibfk_2` FOREIGN KEY (`PRB_location`) REFERENCES `Location` (`LOC_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `problem_ibfk_3` FOREIGN KEY (`PRB_state`) REFERENCES `ProblemState` (`PRS_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `problem_ibfk_4` FOREIGN KEY (`PRB_reportingUser`) REFERENCES `user` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `problem_ibfk_5` FOREIGN KEY (`PRB_authorizedUser`) REFERENCES `user` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `problem_ibfk_4` FOREIGN KEY (`PRB_reportingUser`) REFERENCES `Users` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `problem_ibfk_5` FOREIGN KEY (`PRB_authorizedUser`) REFERENCES `Users` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;
 
 LOCK TABLES `Problem` WRITE;
@@ -312,34 +312,29 @@ DROP TABLE IF EXISTS `User`;
 CREATE TABLE `User` (
   `USR_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `USR_email` varchar(30) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
-  `USR_name` varchar(20) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
-  `USR_surname` varchar(20) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
+  `USR_name` varchar(35) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
   `USR_password` varchar(15) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
-  `USR_phone` varchar(15) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
-  `USR_city` int(15) unsigned NOT NULL,
-  `USR_district` int(15) unsigned NOT NULL,
-  `USR_birthDate` date DEFAULT NULL,
   `USR_createdDate` date DEFAULT NULL,
   `USR_institution` int(11) unsigned NOT NULL,
+  `USR_deviceToken` varchar(100) COLLATE utf8_turkish_ci DEFAULT NULL,
   PRIMARY KEY (`USR_id`),
   KEY `USR_institution` (`USR_institution`),
-  KEY `USR_city` (`USR_city`),
-  KEY `USR_district` (`USR_district`),
-  CONSTRAINT `user_ibfk_1` FOREIGN KEY (`USR_institution`) REFERENCES `Institution` (`INS_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `user_ibfk_2` FOREIGN KEY (`USR_city`) REFERENCES `City` (`CTY_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `user_ibfk_3` FOREIGN KEY (`USR_district`) REFERENCES `District` (`DST_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `user_ibfk_1` FOREIGN KEY (`USR_institution`) REFERENCES `Institution` (`INS_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;
 
 LOCK TABLES `User` WRITE;
 /*!40000 ALTER TABLE `User` DISABLE KEYS */;
 
-INSERT INTO `User` (`USR_id`, `USR_email`, `USR_name`, `USR_surname`, `USR_password`, `USR_phone`, `USR_city`, `USR_district`, `USR_birthDate`, `USR_createdDate`, `USR_institution`)
+INSERT INTO `User` (`USR_id`, `USR_email`, `USR_name`, `USR_password`, `USR_createdDate`, `USR_institution`, `USR_deviceToken`)
 VALUES
-	(22,'mustafa.hasturk@yandex.com','Mustafa','Hastürk','cokgizli','5418524241',34,3,NULL,NULL,0),
-	(23,'iskengin@gmail.com','Engin','Işık','12345','5350858531',34,1,NULL,NULL,0),
-	(24,'kerim.onderr33@gmail.com','Kerim','Önder','123','4334334343',34,8,NULL,NULL,4),
-	(25,'cemo.derrler@gmail.com','Cemal','Derler','123','4324324324',34,1,NULL,NULL,3),
-	(26,'Emo.derler@gmail.com','Emrah','Demezler','312','4324324343',34,1,NULL,NULL,1);
+	(22,'mustafa.hasturk@yandex.com','Mustafa Hastürk','cokgizli',NULL,0,NULL),
+	(23,'iskengin@gmail.com','Engin Işık','12345',NULL,0,NULL),
+	(24,'kerim.onderr33@gmail.com','Kerim Önder','123',NULL,4,NULL),
+	(25,'cemo.derrler@gmail.com','Cemal Derler','123',NULL,3,NULL),
+	(26,'Emo.derler@gmail.com','Emrah Demezler','312',NULL,1,NULL),
+	(27,'acemi@gmail.com','acemi kurnaz','1234',NULL,0,NULL),
+	(28,'acemi1@gmail.com','acemi kurnaz1','1234',NULL,0,NULL),
+	(29,'aliveli@gmail.com','Ali Veli','12345',NULL,0,NULL);
 
 /*!40000 ALTER TABLE `User` ENABLE KEYS */;
 UNLOCK TABLES;

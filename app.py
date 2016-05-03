@@ -13,7 +13,7 @@ app.config['MYSQL_DATABASE_CHARSET'] = 'utf8'
 mysql.init_app(app)
 
 keysForLogin = ['email','password']
-keysForRegister = ['name','surname','email','password','phone','city','district']
+keysForRegister = ['name','email','password']
 
 def check_auth_for_modules(email,password):
     conn = mysql.connect()
@@ -24,8 +24,7 @@ def check_auth_for_modules(email,password):
                for i, value in enumerate(row)) for row in cursor.fetchall()]
 
     if r:
-        cursor.execute("SELECT USR_name as name, USR_surname as surname, USR_email as email, USR_password as password,\
-         USR_phone as phone, USR_city as city, USR_district as district \
+        cursor.execute("SELECT USR_name as name, USR_email as email \
          FROM User WHERE USR_email ='%s' and USR_password='%s' " % (email,password))
         r = [dict((cursor.description[i][0], value) \
                for i, value in enumerate(row)) for row in cursor.fetchall()]
@@ -48,9 +47,9 @@ def check_auth(email,password):
                for i, value in enumerate(row)) for row in cursor.fetchall()]
 
     if r:
-        cursor.execute("Select USR_name as name, USR_surname as surname, USR_email as email, USR_password as password, City.CTY_name as city ,\
-            District.DST_name as district,Institution.`INS_name` as institution , User.USR_phone as phone from User,Institution,City,District\
-            where User.`USR_city` = City.`CTY_id` and User.`USR_district` = District.`DST_id` and User.`USR_institution` = Institution.`INS_id` and \
+        cursor.execute("Select USR_name as name, USR_email as email, USR_password as password, \
+            Institution.`INS_name` as institution from User,Institution\
+            where User.`USR_institution` = Institution.`INS_id` and \
             USR_email ='%s' and USR_password='%s' " % (email,password))
         r = [dict((cursor.description[i][0], value) \
                for i, value in enumerate(row)) for row in cursor.fetchall()]
@@ -95,9 +94,8 @@ def register():
     if r:
         return jsonify({'serviceCode':'1', 'data': None, 'exception':{'exceptionCode':'3', 'exceptionMessage':'This e-mail has already been registered'}})
     else:
-        cursor.execute("INSERT INTO User (USR_email,USR_name,USR_surname,USR_password,USR_phone,USR_city,USR_district, USR_institution) \
-            VALUES ('%s','%s','%s','%s','%s','%s','%s',0);" % (request.json['email'],request.json['name'],request.json['surname'],\
-                request.json['password'],request.json['phone'],request.json['city'],request.json['district']))
+        cursor.execute("INSERT INTO User (USR_email,USR_name,USR_password,USR_institution) \
+            VALUES ('%s','%s','%s',0);" % (request.json['email'],request.json['name'], request.json['password']))
         
         conn.commit()
         result = check_auth(request.json['email'],request.json['password'])
@@ -105,9 +103,30 @@ def register():
         cursor.connection.close()
         return result
 
+@app.route('/api/v1/getReportsOnMap/<int:categ_id>', methods=['GET'])
+def getOnReportsOnMap(categ_id):
+    conn = mysql.connect()
+    cursor = conn.cursor()
 
-@app.route('/api/v1/getReportsOnMap', methods=['POST'])
-def getOnReportsOnMap():
+    if categ_id == 0:
+        cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as reportType, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description,\
+            Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longtitude from Problem, Location, Category\
+            where Problem.`PRB_location` = Location.`LOC_id` and Problem.`PRB_category` = Category.`CAT_id`")
+        reports = [dict((cursor.description[i][0], value) \
+               for i, value in enumerate(row)) for row in cursor.fetchall()]
+    else:
+        cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as reportType, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description, \
+            Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longtitude from Problem, Location, Category \
+            where Problem.`PRB_location` = Location.`LOC_id` and Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_category` = '%s'" % (categ_id))
+        reports = [dict((cursor.description[i][0], value) \
+               for i, value in enumerate(row)) for row in cursor.fetchall()]
+
+    cursor.connection.close()
+    return jsonify({'serviceCode':0, 'data': reports, 'exception': None})
+
+
+@app.route('/api/v1/getReportsOnMap1', methods=['POST'])
+def getOnReportsOnMap1():
     if not request.json:
         abort(400)
     for key in keysForLogin:
@@ -162,5 +181,6 @@ def bad_request(error):
     return make_response(jsonify({'ErrorCode':'400','ErrorMessage':'Bad_Request'}),400)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',debug=True)
+    app.run(debug=True)
+    #host='0.0.0.0',
 
