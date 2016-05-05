@@ -14,6 +14,7 @@ mysql.init_app(app)
 
 keysForLogin = ['email','password']
 keysForRegister = ['fullname','email','password']
+keysForReport = ['email','password','neighborhood','longitude','latitude','locationDetail','title','description','category','imageUrl']
 
 def check_auth_for_modules(email,password):
     conn = mysql.connect()
@@ -63,6 +64,34 @@ def check_auth(email,password):
         cursor.connection.close()
         return jsonify({'serviceCode': 1, 'data': None , 'exception': {'exceptionCode':2, 'exceptionMessage':'There is no user with email '+email}})
 
+def get_report_details_for_modules(reportID):
+    reportId = reportID
+    conn = mysql.connect()
+    cursor = conn.cursor()
+
+    if reportId == None:
+        
+        jsonMessage = {'serviceCode' : 1, 'data':None, 'exception':{'exceptionCode': 4, 'exceptionMessage': 'There is no reportId parameter'}}
+
+    else:
+        cursor.execute("Select Problem.PRB_id as problemId, User.`USR_name` as fullname, Problem.`PRB_title` as title, Category.`CAT_name` as category,\
+            Problem.`PRB_explanation` as description, ProblemState.`PRS_name` as state, City.`CTY_name` as city ,District.`DST_name` as district, \
+            Neighborhood.`NBH_name` as neighborhood, Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude, \
+            Problem.`PRB_authorizedUser` as authorizedUser, DATE_FORMAT(Problem.`PRB_createdDate`, '%%d-%%m-%%Y')  as createdDate, \
+            DATE_FORMAT(Problem.`PRB_updatedDate`, '%%d-%%m-%%Y')  as updatedDate, ProblemImage.PRI_imageUrl as imageUrl \
+            from Problem, Category, User, ProblemState, Location, Neighborhood, District, city, ProblemImage \
+            WHERE Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_reportingUser` = User.`USR_id` and Problem.`PRB_state` = ProblemState.`PRS_id` and \
+            Problem.`PRB_location` = Location.`LOC_id` and Location.`LOC_neighborhood` = Neighborhood.`NBH_id` and Neighborhood.`NBH_district` = District.`DST_id` and\
+            District.`DST_city` = City.`CTY_id` and Problem.`PRB_id` = ProblemImage.`PRI_problem` and Problem.`PRB_id` = '%s'" % (reportId))
+        reports = [dict((cursor.description[i][0], value) \
+               for i, value in enumerate(row)) for row in cursor.fetchall()]
+        if reports:
+            jsonMessage = {'serviceCode':0, 'data': reports, 'exception': None}
+        else:
+            jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 5, 'exceptionMessage': 'There is no report for this reportID'}}
+
+    cursor.connection.close()
+    return jsonify(jsonMessage)
 
 
 @app.route('/api/v1/memberLogin', methods=['POST'])
@@ -102,6 +131,45 @@ def register():
         #id = cursor.lastrowid
         cursor.connection.close()
         return result
+
+
+@app.route('/api/v1/giveReport', methods=['POST'])
+def giveReport():
+    if not request.json:
+        abort(400)
+    for key in keysForReport:
+        if not key in request.json:
+            abort(400)
+
+    conn = mysql.connect()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT USR_id FROM User WHERE USR_email ='%s' and USR_password ='%s'" % (request.json['email'],request.json['password']))
+    result = [dict((cursor.description[i][0], value) \
+               for i, value in enumerate(row)) for row in cursor.fetchall()]
+    if result:
+        userid = result[0]['USR_id']
+        cursor.execute("INSERT INTO Location (LOC_latitude,LOC_longitude,LOC_detail,LOC_neighborhood) \
+            VALUES ('%f','%f','%s',1);" % (request.json['latitude'],request.json['longitude'], request.json['locationDetail']))
+        conn.commit()
+        locationId = cursor.lastrowid
+
+        cursor.execute("INSERT INTO Problem (PRB_category,PRB_location,PRB_state,PRB_title, PRB_explanation,PRB_reportingUser, PRB_createdDate) \
+            VALUES ('%d','%d',1,'%s','%s','%d',CURDATE());" % (request.json['category'],locationId,request.json['title'],request.json['description'],userid))
+        conn.commit()
+        problemid = cursor.lastrowid
+
+        cursor.execute("INSERT INTO ProblemImage (PRI_problem,PRI_imageUrl) \
+            VALUES ('%d','%s');" % (problemid,request.json['imageUrl']))
+        conn.commit()
+        cursor.connection.close()
+        jsonMessage = get_report_details_for_modules(problemid)
+        return jsonMessage
+    else:
+        cursor.connection.close()
+        jsonMessage = {'serviceCode': 1, 'data': None, 'exception':{'exceptionCode':7,'exceptionMessage':'E-mail or password incorrect'}}
+        return jsonify(jsonMessage)   
+
 
 @app.route('/api/v1/getReportsOnMap', methods=['GET'])
 def getOnReportsOnMap():
@@ -147,11 +215,11 @@ def getReportDetails():
             Problem.`PRB_explanation` as description, ProblemState.`PRS_name` as state, City.`CTY_name` as city ,District.`DST_name` as district, \
             Neighborhood.`NBH_name` as neighborhood, Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude, \
             Problem.`PRB_authorizedUser` as authorizedUser, DATE_FORMAT(Problem.`PRB_createdDate`, '%%d-%%m-%%Y')  as createdDate, \
-            DATE_FORMAT(Problem.`PRB_updatedDate`, '%%d-%%m-%%Y')  as updatedDate \
-            from Problem, Category, User, ProblemState, Location, Neighborhood, District, city \
+            DATE_FORMAT(Problem.`PRB_updatedDate`, '%%d-%%m-%%Y')  as updatedDate, ProblemImage.PRI_imageUrl as imageUrl \
+            from Problem, Category, User, ProblemState, Location, Neighborhood, District, city, ProblemImage \
             WHERE Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_reportingUser` = User.`USR_id` and Problem.`PRB_state` = ProblemState.`PRS_id` and \
             Problem.`PRB_location` = Location.`LOC_id` and Location.`LOC_neighborhood` = Neighborhood.`NBH_id` and Neighborhood.`NBH_district` = District.`DST_id` and\
-            District.`DST_city` = City.`CTY_id` and Problem.`PRB_id` = '%s'" % (reportId))
+            District.`DST_city` = City.`CTY_id` and Problem.`PRB_id` = ProblemImage.`PRI_problem` and Problem.`PRB_id` = '%s'" % (reportId))
         reports = [dict((cursor.description[i][0], value) \
                for i, value in enumerate(row)) for row in cursor.fetchall()]
         if reports:
@@ -161,6 +229,7 @@ def getReportDetails():
 
     cursor.connection.close()
     return jsonify(jsonMessage)
+
 
 
 @app.errorhandler(400)

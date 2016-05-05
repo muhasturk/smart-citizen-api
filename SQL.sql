@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.24)
 # Database: smart_citizen
-# Generation Time: 2016-05-05 08:47:18 +0000
+# Generation Time: 2016-05-05 14:44:59 +0000
 # ************************************************************
 
 
@@ -187,8 +187,7 @@ INSERT INTO `Location` (`LOC_id`, `LOC_neighborhood`, `LOC_latitude`, `LOC_longi
 VALUES
 	(1,1,40.990755,28.716683,'Sıhhiye Sokak'),
 	(3,1,40.990347,28.719055,'Ortanca sokak'),
-	(4,1,40.989078,28.722287,'İstanbul Üniversitesi Avcılar Yerleşkesi girişi'),
-	(5,1,40.994673,28.712522,'Kiraz Sokak');
+	(35,1,40.995466,28.714455,'falanca sokak');
 
 /*!40000 ALTER TABLE `Location` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -234,32 +233,32 @@ CREATE TABLE `Problem` (
   `PRB_state` int(11) unsigned NOT NULL,
   `PRB_title` varchar(40) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
   `PRB_explanation` varchar(200) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
-  `PRB_reportingUser` int(11) unsigned NOT NULL,
   `PRB_authorizedUser` int(11) unsigned DEFAULT NULL,
   `PRB_score` int(11) DEFAULT NULL,
   `PRB_createdDate` date DEFAULT NULL,
   `PRB_updatedDate` date DEFAULT NULL,
+  `PRB_reportingUser` int(11) unsigned DEFAULT NULL,
   PRIMARY KEY (`PRB_id`),
   KEY `PRB_category` (`PRB_category`),
   KEY `PRB_location` (`PRB_location`),
   KEY `PRB_state` (`PRB_state`),
-  KEY `PRB_reportingUser` (`PRB_reportingUser`),
   KEY `PRB_authorizedUser` (`PRB_authorizedUser`),
+  KEY `PRB_reportingUser` (`PRB_reportingUser`),
   CONSTRAINT `problem_ibfk_1` FOREIGN KEY (`PRB_category`) REFERENCES `Category` (`CAT_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `problem_ibfk_2` FOREIGN KEY (`PRB_location`) REFERENCES `Location` (`LOC_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `problem_ibfk_3` FOREIGN KEY (`PRB_state`) REFERENCES `ProblemState` (`PRS_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `problem_ibfk_4` FOREIGN KEY (`PRB_reportingUser`) REFERENCES `Users` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `problem_ibfk_5` FOREIGN KEY (`PRB_authorizedUser`) REFERENCES `Users` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `problem_ibfk_5` FOREIGN KEY (`PRB_authorizedUser`) REFERENCES `Users` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `problem_ibfk_6` FOREIGN KEY (`PRB_reportingUser`) REFERENCES `User` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;
 
 LOCK TABLES `Problem` WRITE;
 /*!40000 ALTER TABLE `Problem` DISABLE KEYS */;
 
-INSERT INTO `Problem` (`PRB_id`, `PRB_category`, `PRB_location`, `PRB_state`, `PRB_title`, `PRB_explanation`, `PRB_reportingUser`, `PRB_authorizedUser`, `PRB_score`, `PRB_createdDate`, `PRB_updatedDate`)
+INSERT INTO `Problem` (`PRB_id`, `PRB_category`, `PRB_location`, `PRB_state`, `PRB_title`, `PRB_explanation`, `PRB_authorizedUser`, `PRB_score`, `PRB_createdDate`, `PRB_updatedDate`, `PRB_reportingUser`)
 VALUES
-	(4,7,3,1,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',23,NULL,NULL,'2016-03-18','2016-03-25'),
-	(10,1,1,1,'Elektrik Direği Işığı','Sokağın başındaki elektrik direğinin ışığı yanmıyor',22,NULL,NULL,NULL,NULL),
-	(15,7,5,1,'Kaldırım Parke düzenlemesi','Sokaktaki kaldırımın üzerindeki parkeler bozuk duruyor',22,NULL,NULL,NULL,NULL);
+	(4,7,3,1,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',NULL,NULL,'2016-03-18','2016-03-25',24),
+	(10,1,1,1,'Elektrik Direği Işığı','Sokağın başındaki elektrik direğinin ışığı yanmıyor',NULL,NULL,'2016-03-20',NULL,23),
+	(38,1,35,1,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,NULL,'2016-05-05',NULL,23);
 
 /*!40000 ALTER TABLE `Problem` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -277,6 +276,17 @@ CREATE TABLE `ProblemImage` (
   PRIMARY KEY (`PRI_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;
 
+LOCK TABLES `ProblemImage` WRITE;
+/*!40000 ALTER TABLE `ProblemImage` DISABLE KEYS */;
+
+INSERT INTO `ProblemImage` (`PRI_id`, `PRI_problem`, `PRI_imageUrl`)
+VALUES
+	(15,38,'falancaadres.jpg'),
+	(16,10,'falancaadres.jpg'),
+	(17,4,'falancaadres.jpg');
+
+/*!40000 ALTER TABLE `ProblemImage` ENABLE KEYS */;
+UNLOCK TABLES;
 
 
 # Dump of table ProblemState
