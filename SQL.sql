@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.24)
 # Database: smart_citizen
-# Generation Time: 2016-05-03 18:51:40 +0000
+# Generation Time: 2016-05-05 08:47:18 +0000
 # ************************************************************
 
 
@@ -257,7 +257,7 @@ LOCK TABLES `Problem` WRITE;
 
 INSERT INTO `Problem` (`PRB_id`, `PRB_category`, `PRB_location`, `PRB_state`, `PRB_title`, `PRB_explanation`, `PRB_reportingUser`, `PRB_authorizedUser`, `PRB_score`, `PRB_createdDate`, `PRB_updatedDate`)
 VALUES
-	(4,7,3,1,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',23,NULL,NULL,NULL,NULL),
+	(4,7,3,1,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',23,NULL,NULL,'2016-03-18','2016-03-25'),
 	(10,1,1,1,'Elektrik Direği Işığı','Sokağın başındaki elektrik direğinin ışığı yanmıyor',22,NULL,NULL,NULL,NULL),
 	(15,7,5,1,'Kaldırım Parke düzenlemesi','Sokaktaki kaldırımın üzerindeki parkeler bozuk duruyor',22,NULL,NULL,NULL,NULL);
 
@@ -334,7 +334,8 @@ VALUES
 	(26,'Emo.derler@gmail.com','Emrah Demezler','312',NULL,1,NULL),
 	(27,'acemi@gmail.com','acemi kurnaz','1234',NULL,0,NULL),
 	(28,'acemi1@gmail.com','acemi kurnaz1','1234',NULL,0,NULL),
-	(29,'aliveli@gmail.com','Ali Veli','12345',NULL,0,NULL);
+	(29,'aliveli@gmail.com','Ali Veli','12345',NULL,0,NULL),
+	(30,'aliveli1@gmail.com','Ali veli1','12345',NULL,0,NULL);
 
 /*!40000 ALTER TABLE `User` ENABLE KEYS */;
 UNLOCK TABLES;
