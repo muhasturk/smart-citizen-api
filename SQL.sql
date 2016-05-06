@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.24)
 # Database: smart_citizen
-# Generation Time: 2016-05-05 14:44:59 +0000
+# Generation Time: 2016-05-06 17:21:40 +0000
 # ************************************************************
 
 
@@ -327,6 +327,7 @@ CREATE TABLE `User` (
   `USR_createdDate` date DEFAULT NULL,
   `USR_institution` int(11) unsigned NOT NULL,
   `USR_deviceToken` varchar(100) COLLATE utf8_turkish_ci DEFAULT NULL,
+  `USR_activated` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`USR_id`),
   KEY `USR_institution` (`USR_institution`),
   CONSTRAINT `user_ibfk_1` FOREIGN KEY (`USR_institution`) REFERENCES `Institution` (`INS_id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -335,17 +336,17 @@ CREATE TABLE `User` (
 LOCK TABLES `User` WRITE;
 /*!40000 ALTER TABLE `User` DISABLE KEYS */;
 
-INSERT INTO `User` (`USR_id`, `USR_email`, `USR_name`, `USR_password`, `USR_createdDate`, `USR_institution`, `USR_deviceToken`)
+INSERT INTO `User` (`USR_id`, `USR_email`, `USR_name`, `USR_password`, `USR_createdDate`, `USR_institution`, `USR_deviceToken`, `USR_activated`)
 VALUES
-	(22,'mustafa.hasturk@yandex.com','Mustafa Hastürk','cokgizli',NULL,0,NULL),
-	(23,'iskengin@gmail.com','Engin Işık','12345',NULL,0,NULL),
-	(24,'kerim.onderr33@gmail.com','Kerim Önder','123',NULL,4,NULL),
-	(25,'cemo.derrler@gmail.com','Cemal Derler','123',NULL,3,NULL),
-	(26,'Emo.derler@gmail.com','Emrah Demezler','312',NULL,1,NULL),
-	(27,'acemi@gmail.com','acemi kurnaz','1234',NULL,0,NULL),
-	(28,'acemi1@gmail.com','acemi kurnaz1','1234',NULL,0,NULL),
-	(29,'aliveli@gmail.com','Ali Veli','12345',NULL,0,NULL),
-	(30,'aliveli1@gmail.com','Ali veli1','12345',NULL,0,NULL);
+	(22,'mustafa.hasturk@yandex.com','Mustafa Hastürk','cokgizli',NULL,0,NULL,1),
+	(23,'iskengin@gmail.com','Engin Işık','12345',NULL,0,NULL,1),
+	(24,'kerim.onderr33@info.com','Kerim Önder','123',NULL,4,NULL,1),
+	(25,'cemo.derrler@info.com','Cemal Derler','123',NULL,3,NULL,1),
+	(26,'Emo.derler@info.com','Emrah Demezler','312',NULL,1,NULL,1),
+	(27,'acemi@info.com','acemi kurnaz','1234',NULL,0,NULL,1),
+	(28,'acemi1@info.com','acemi kurnaz1','1234',NULL,0,NULL,1),
+	(29,'aliveli@info.com','Ali Veli','12345',NULL,0,NULL,1),
+	(32,'normal@info.com','normal info','1234',NULL,0,NULL,1);
 
 /*!40000 ALTER TABLE `User` ENABLE KEYS */;
 UNLOCK TABLES;

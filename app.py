@@ -13,20 +13,20 @@ app.config['MYSQL_DATABASE_CHARSET'] = 'utf8'
 mysql.init_app(app)
 
 keysForLogin = ['email','password']
-keysForRegister = ['fullName','email','password']
+keysForRegister = ['fullName','email','password','deviceToken']
 keysForReport = ['email','password','neighborhood','longitude','latitude','locationDetail','title','description','category','imageUrl']
 
 def check_auth_for_modules(email,password):
     conn = mysql.connect()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM User WHERE USR_email ='%s'" % (email))
+    cursor.execute("SELECT * FROM User WHERE USR_email ='%s' and USR_activated = 1 " % (email))
     r = [dict((cursor.description[i][0], value) \
                for i, value in enumerate(row)) for row in cursor.fetchall()]
 
     if r:
         cursor.execute("SELECT USR_name as fullName, USR_email as email \
-         FROM User WHERE USR_email ='%s' and USR_password='%s' " % (email,password))
+         FROM User WHERE USR_email ='%s' and USR_password='%s' and USR_activated = 1 " % (email,password))
         r = [dict((cursor.description[i][0], value) \
                for i, value in enumerate(row)) for row in cursor.fetchall()]
         cursor.connection.close()
@@ -43,7 +43,7 @@ def check_auth(email,password):
     conn = mysql.connect()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM User WHERE USR_email ='%s'" % (email))
+    cursor.execute("SELECT * FROM User WHERE USR_email ='%s' and USR_activated = 1 " % (email))
     r = [dict((cursor.description[i][0], value) \
                for i, value in enumerate(row)) for row in cursor.fetchall()]
 
@@ -51,7 +51,7 @@ def check_auth(email,password):
         cursor.execute("Select USR_id as id,USR_name as fullName, USR_email as email, \
             Institution.`INS_id` as roleId, Institution.`INS_name` as roleName from User,Institution\
             where User.`USR_institution` = Institution.`INS_id` and \
-            USR_email ='%s' and USR_password='%s' " % (email,password))
+            USR_email ='%s' and USR_password='%s' and USR_activated = 1 " % (email,password))
         r = [dict((cursor.description[i][0], value) \
                for i, value in enumerate(row)) for row in cursor.fetchall()]
         cursor.connection.close()
@@ -123,8 +123,8 @@ def register():
     if r:
         return jsonify({'serviceCode':1, 'data': None, 'exception':{'exceptionCode':3, 'exceptionMessage':'This e-mail has already been registered'}})
     else:
-        cursor.execute("INSERT INTO User (USR_email,USR_name,USR_password,USR_institution) \
-            VALUES ('%s','%s','%s',0);" % (request.json['email'],request.json['fullName'], request.json['password']))
+        cursor.execute("INSERT INTO User (USR_email,USR_name,USR_password,USR_institution, USR_activated, USR_createdDate, USR_deviceToken) \
+            VALUES ('%s','%s','%s',0,1,CURDATE(),'%s');" % (request.json['email'],request.json['fullName'], request.json['password'],request.json['deviceToken']))
         
         conn.commit()
         result = check_auth(request.json['email'],request.json['password'])
@@ -144,7 +144,7 @@ def sendReport():
     conn = mysql.connect()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT USR_id FROM User WHERE USR_email ='%s' and USR_password ='%s'" % (request.json['email'],request.json['password']))
+    cursor.execute("SELECT USR_id FROM User WHERE USR_email ='%s' and USR_password ='%s' and USR_activated = 1" % (request.json['email'],request.json['password']))
     result = [dict((cursor.description[i][0], value) \
                for i, value in enumerate(row)) for row in cursor.fetchall()]
     if result:
@@ -231,6 +231,30 @@ def getReportDetails():
     return jsonify(jsonMessage)
 
 
+@app.route('/disableUser', methods=['POST'])
+def disableUser():
+    if not request.json:
+        abort(400)
+    for key in keysForLogin:
+        if not key in request.json:
+            abort(400)
+
+    result = check_auth_for_modules(request.json['email'],request.json['password'])
+
+    if result == 1:
+        conn = mysql.connect()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE User SET USR_activated = 0 WHERE USR_email = '%s' and USR_password = '%s'" % (request.json['email'],request.json['password']))
+        conn.commit()
+        cursor.connection.close()
+        return jsonify({'serviceCode': 0, 'data': None , 'exception': None })
+
+    elif result == 2:
+        return jsonify({'serviceCode': 1, 'data': None , 'exception': {'exceptionCode':1, 'exceptionMessage':'The password is incorrect'}})
+    else:
+        return jsonify({'serviceCode': 1, 'data': None , 'exception': {'exceptionCode':2, 'exceptionMessage':'There is no user with email '+email}})
+
+   
 
 @app.errorhandler(400)
 def bad_request(error):
