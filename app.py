@@ -13,7 +13,7 @@ app.config['MYSQL_DATABASE_CHARSET'] = 'utf8'
 mysql.init_app(app)
 
 keysForLogin = ['email','password']
-keysForRegister = ['fullname','email','password']
+keysForRegister = ['fullName','email','password']
 keysForReport = ['email','password','neighborhood','longitude','latitude','locationDetail','title','description','category','imageUrl']
 
 def check_auth_for_modules(email,password):
@@ -25,7 +25,7 @@ def check_auth_for_modules(email,password):
                for i, value in enumerate(row)) for row in cursor.fetchall()]
 
     if r:
-        cursor.execute("SELECT USR_name as fullname, USR_email as email \
+        cursor.execute("SELECT USR_name as fullName, USR_email as email \
          FROM User WHERE USR_email ='%s' and USR_password='%s' " % (email,password))
         r = [dict((cursor.description[i][0], value) \
                for i, value in enumerate(row)) for row in cursor.fetchall()]
@@ -48,8 +48,8 @@ def check_auth(email,password):
                for i, value in enumerate(row)) for row in cursor.fetchall()]
 
     if r:
-        cursor.execute("Select USR_name as fullname, USR_email as email, \
-            Institution.`INS_id` as institution from User,Institution\
+        cursor.execute("Select USR_id as id,USR_name as fullName, USR_email as email, \
+            Institution.`INS_id` as roleId, Institution.`INS_name` as roleName from User,Institution\
             where User.`USR_institution` = Institution.`INS_id` and \
             USR_email ='%s' and USR_password='%s' " % (email,password))
         r = [dict((cursor.description[i][0], value) \
@@ -74,7 +74,7 @@ def get_report_details_for_modules(reportID):
         jsonMessage = {'serviceCode' : 1, 'data':None, 'exception':{'exceptionCode': 4, 'exceptionMessage': 'There is no reportId parameter'}}
 
     else:
-        cursor.execute("Select Problem.PRB_id as problemId, User.`USR_name` as fullname, Problem.`PRB_title` as title, Category.`CAT_name` as category,\
+        cursor.execute("Select Problem.PRB_id as problemId, User.`USR_name` as fullName, Problem.`PRB_title` as title, Category.`CAT_name` as category,\
             Problem.`PRB_explanation` as description, ProblemState.`PRS_name` as state, City.`CTY_name` as city ,District.`DST_name` as district, \
             Neighborhood.`NBH_name` as neighborhood, Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude, \
             Problem.`PRB_authorizedUser` as authorizedUser, DATE_FORMAT(Problem.`PRB_createdDate`, '%%d-%%m-%%Y')  as createdDate, \
@@ -124,7 +124,7 @@ def register():
         return jsonify({'serviceCode':1, 'data': None, 'exception':{'exceptionCode':3, 'exceptionMessage':'This e-mail has already been registered'}})
     else:
         cursor.execute("INSERT INTO User (USR_email,USR_name,USR_password,USR_institution) \
-            VALUES ('%s','%s','%s',0);" % (request.json['email'],request.json['fullname'], request.json['password']))
+            VALUES ('%s','%s','%s',0);" % (request.json['email'],request.json['fullName'], request.json['password']))
         
         conn.commit()
         result = check_auth(request.json['email'],request.json['password'])
@@ -211,7 +211,7 @@ def getReportDetails():
         jsonMessage = {'serviceCode' : 1, 'data':None, 'exception':{'exceptionCode': 4, 'exceptionMessage': 'There is no reportId parameter'}}
 
     else:
-        cursor.execute("Select Problem.PRB_id as problemId, User.`USR_name` as fullname, Problem.`PRB_title` as title, Category.`CAT_name` as category,\
+        cursor.execute("Select Problem.PRB_id as problemId, User.`USR_name` as fullName, Problem.`PRB_title` as title, Category.`CAT_name` as category,\
             Problem.`PRB_explanation` as description, ProblemState.`PRS_name` as state, City.`CTY_name` as city ,District.`DST_name` as district, \
             Neighborhood.`NBH_name` as neighborhood, Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude, \
             Problem.`PRB_authorizedUser` as authorizedUser, DATE_FORMAT(Problem.`PRB_createdDate`, '%%d-%%m-%%Y')  as createdDate, \
@@ -246,6 +246,6 @@ def not_found(error):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port = 80 ,debug=True)
+    app.run(host='0.0.0.0', port=80 ,debug=True)
     #host='0.0.0.0',
 
