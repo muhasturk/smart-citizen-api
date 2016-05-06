@@ -94,7 +94,7 @@ def get_report_details_for_modules(reportID):
     return jsonify(jsonMessage)
 
 
-@app.route('/api/v1/memberLogin', methods=['POST'])
+@app.route('/api/memberLogin', methods=['POST'])
 def memberLogin():
     if not request.json:
         abort(400)
@@ -106,7 +106,7 @@ def memberLogin():
     return result
 
 
-@app.route('/api/v1/memberSignUp', methods=['POST'])
+@app.route('/api/memberSignUp', methods=['POST'])
 def register():
     if not request.json:
         abort(400)
@@ -133,8 +133,8 @@ def register():
         return result
 
 
-@app.route('/api/v1/giveReport', methods=['POST'])
-def giveReport():
+@app.route('/api/sendReport', methods=['POST'])
+def sendReport():
     if not request.json:
         abort(400)
     for key in keysForReport:
@@ -171,7 +171,7 @@ def giveReport():
         return jsonify(jsonMessage)   
 
 
-@app.route('/api/v1/getReportsOnMap', methods=['GET'])
+@app.route('/api/getReportsOnMap', methods=['GET'])
 def getOnReportsOnMap():
     reportType = request.args.get('reportType')
     conn = mysql.connect()
@@ -200,7 +200,7 @@ def getOnReportsOnMap():
     return jsonify(jsonMessage)
 
 
-@app.route('/api/v1/getReportDetails', methods=['GET'])
+@app.route('/api/getReportDetails', methods=['GET'])
 def getReportDetails():
     reportId = request.args.get('reportId')
     conn = mysql.connect()
@@ -246,6 +246,6 @@ def not_found(error):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',debug=True)
+    app.run(host='0.0.0.0', port = 80 ,debug=True)
     #host='0.0.0.0',
 
