@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.24)
 # Database: smart_citizen
-# Generation Time: 2016-05-11 16:35:58 +0000
+# Generation Time: 2016-05-11 19:25:40 +0000
 # ************************************************************
 
 
@@ -171,10 +171,9 @@ DROP TABLE IF EXISTS `Location`;
 
 CREATE TABLE `Location` (
   `LOC_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `LOC_neighborhood` int(11) unsigned NOT NULL,
+  `LOC_neighborhood` int(11) unsigned DEFAULT NULL,
   `LOC_latitude` double NOT NULL,
   `LOC_longitude` double NOT NULL,
-  `LOC_detail` varchar(200) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`LOC_id`),
   KEY `LOC_neighborhood` (`LOC_neighborhood`),
   CONSTRAINT `location_ibfk_1` FOREIGN KEY (`LOC_neighborhood`) REFERENCES `Neighborhood` (`NBH_id`) ON DELETE CASCADE ON UPDATE CASCADE
@@ -183,11 +182,11 @@ CREATE TABLE `Location` (
 LOCK TABLES `Location` WRITE;
 /*!40000 ALTER TABLE `Location` DISABLE KEYS */;
 
-INSERT INTO `Location` (`LOC_id`, `LOC_neighborhood`, `LOC_latitude`, `LOC_longitude`, `LOC_detail`)
+INSERT INTO `Location` (`LOC_id`, `LOC_neighborhood`, `LOC_latitude`, `LOC_longitude`)
 VALUES
-	(1,1,40.990755,28.716683,'Sıhhiye Sokak'),
-	(3,1,40.990347,28.719055,'Ortanca sokak'),
-	(35,1,40.995466,28.714455,'falanca sokak');
+	(1,1,40.990755,28.716683),
+	(3,1,40.990347,28.719055),
+	(35,1,40.995466,28.714455);
 
 /*!40000 ALTER TABLE `Location` ENABLE KEYS */;
 UNLOCK TABLES;
