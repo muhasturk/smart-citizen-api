@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.24)
 # Database: smart_citizen
-# Generation Time: 2016-05-06 17:21:40 +0000
+# Generation Time: 2016-05-11 16:35:58 +0000
 # ************************************************************
 
 
@@ -234,7 +234,7 @@ CREATE TABLE `Problem` (
   `PRB_title` varchar(40) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
   `PRB_explanation` varchar(200) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
   `PRB_authorizedUser` int(11) unsigned DEFAULT NULL,
-  `PRB_score` int(11) DEFAULT NULL,
+  `PRB_count` int(11) DEFAULT NULL,
   `PRB_createdDate` date DEFAULT NULL,
   `PRB_updatedDate` date DEFAULT NULL,
   `PRB_reportingUser` int(11) unsigned DEFAULT NULL,
@@ -254,11 +254,11 @@ CREATE TABLE `Problem` (
 LOCK TABLES `Problem` WRITE;
 /*!40000 ALTER TABLE `Problem` DISABLE KEYS */;
 
-INSERT INTO `Problem` (`PRB_id`, `PRB_category`, `PRB_location`, `PRB_state`, `PRB_title`, `PRB_explanation`, `PRB_authorizedUser`, `PRB_score`, `PRB_createdDate`, `PRB_updatedDate`, `PRB_reportingUser`)
+INSERT INTO `Problem` (`PRB_id`, `PRB_category`, `PRB_location`, `PRB_state`, `PRB_title`, `PRB_explanation`, `PRB_authorizedUser`, `PRB_count`, `PRB_createdDate`, `PRB_updatedDate`, `PRB_reportingUser`)
 VALUES
-	(4,7,3,1,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',NULL,NULL,'2016-03-18','2016-03-25',24),
-	(10,1,1,1,'Elektrik Direği Işığı','Sokağın başındaki elektrik direğinin ışığı yanmıyor',NULL,NULL,'2016-03-20',NULL,23),
-	(38,1,35,1,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,NULL,'2016-05-05',NULL,23);
+	(4,7,3,1,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',NULL,10,'2016-03-18','2016-03-25',24),
+	(10,1,1,1,'Elektrik Direği Işığı','Sokağın başındaki elektrik direğinin ışığı yanmıyor',NULL,10,'2016-03-20',NULL,23),
+	(38,1,35,1,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,10,'2016-05-05',NULL,23);
 
 /*!40000 ALTER TABLE `Problem` ENABLE KEYS */;
 UNLOCK TABLES;

@@ -1,3 +1,4 @@
+
 import json
 
 from flask import Flask,jsonify,abort,make_response,request
@@ -171,23 +172,23 @@ def sendReport():
         return jsonify(jsonMessage)   
 
 
-@app.route('/getReportsOnMap', methods=['GET'])
-def getOnReportsOnMap():
+@app.route('/getUnorderedReportsByType', methods=['GET'])
+def getUnorderedReportsByType():
     reportType = request.args.get('reportType')
     conn = mysql.connect()
     cursor = conn.cursor()
 
     if reportType == "0" or reportType == None:
-        cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as reportType, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description,\
-            Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude from Problem, Location, Category\
+        cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as type, Category.`CAT_id` as typeId, Problem.`PRB_title` as title, \
+            Problem.`PRB_explanation` as description, Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude from Problem, Location, Category\
             where Problem.`PRB_location` = Location.`LOC_id` and Problem.`PRB_category` = Category.`CAT_id`")
         reports = [dict((cursor.description[i][0], value) \
                for i, value in enumerate(row)) for row in cursor.fetchall()]
         jsonMessage = {'serviceCode':0, 'data': reports, 'exception': None}
 
     else:
-        cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as reportType, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description, \
-            Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude from Problem, Location, Category \
+        cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as type, Category.`CAT_id` as typeId, Problem.`PRB_title` as title, \
+            Problem.`PRB_explanation` as description, Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude from Problem, Location, Category\
             where Problem.`PRB_location` = Location.`LOC_id` and Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_category` = '%s'" % (reportType))
         reports = [dict((cursor.description[i][0], value) \
                for i, value in enumerate(row)) for row in cursor.fetchall()]
@@ -254,6 +255,49 @@ def disableUser():
     else:
         return jsonify({'serviceCode': 1, 'data': None , 'exception': {'exceptionCode':2, 'exceptionMessage':'There is no user with email '+email}})
 
+@app.route('/getReportsByType', methods=['GET'])
+def getReports():
+    reportType = request.args.get('reportType')
+    conn = mysql.connect()
+    cursor = conn.cursor()
+    reports = {}
+
+    if reportType == "0" or reportType == None:
+        cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as reportType, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description, \
+            Problem.`PRB_state` as statusId, `ProblemState`.`PRS_name` as status, Problem.`PRB_count` as count \
+            from Problem, Category, ProblemState \
+            where Problem.`PRB_state` = ProblemState.`PRS_id`and Problem.`PRB_category` = Category.`CAT_id` ORDER BY Category.`CAT_name`")
+        temp = ""
+        for row in cursor.fetchall():
+            if temp == row[1]:
+                reports[row[1]].append(dict((cursor.description[a][0], value) for a, value in enumerate(row)))
+            else:
+                reports[row[1]] = [dict((cursor.description[i][0], value) for i, value in enumerate(row))]
+                temp = row[1]
+
+        jsonMessage = {'serviceCode':0, 'data': reports, 'exception': None}
+
+    else:
+        cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as reportType, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description, \
+            Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude from Problem, Location, Category \
+            where Problem.`PRB_location` = Location.`LOC_id` and Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_category` = '%s'" % (reportType))
+        i = 0
+        for row in cursor.fetchall():
+            if i == 0:
+                reports[row[1]] = [dict((cursor.description[i][0], value) for i, value in enumerate(row))]
+                i = i + 1
+            else:
+                reports[row[1]].append(dict((cursor.description[a][0], value) for a, value in enumerate(row)))
+
+        if reports:
+            jsonMessage = {'serviceCode':0, 'data': reports, 'exception': None}
+        else:
+            jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 6, 'exceptionMessage': 'There is no report for this reportType'}}
+
+    cursor.connection.close()
+    return jsonify(jsonMessage)
+
+
    
 
 @app.errorhandler(400)
@@ -271,5 +315,5 @@ def not_found(error):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80 ,debug=True)
-    #host='0.0.0.0',
+    #host='0.0.0.0', port=80 ,
 
