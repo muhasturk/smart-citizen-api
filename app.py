@@ -135,8 +135,9 @@ def register():
         if r:
             return jsonify({'serviceCode':1, 'data': None, 'exception':{'exceptionCode':3, 'exceptionMessage':'This e-mail has already been registered'}})
         else:
-            cursor.execute("INSERT INTO User (USR_email,USR_name,USR_password,USR_institution, USR_activated, USR_createdDate, USR_deviceToken) \
-                VALUES ('%s','%s','%s',0,1,CURDATE(),'%s');" % (request.json['email'],request.json['fullName'], request.json['password'],request.json['deviceToken']))
+            cursor.execute("INSERT INTO User (USR_email,USR_name,USR_password,USR_institution, USR_activated,  \
+            USR_createdDate, USR_deviceToken) VALUES ('%s','%s','%s',0,1,CURDATE(),'%s');" % (request.json['email'], \
+            request.json['fullName'], request.json['password'],request.json['deviceToken']))
             
             conn.commit()
             result = check_auth(request.json['email'],request.json['password'])
