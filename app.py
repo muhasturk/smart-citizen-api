@@ -15,6 +15,7 @@ mysql.init_app(app)
 
 keysForLogin = ['email','password']
 keysForRegister = ['fullName','email','password','deviceToken']
+keysForAccept = ['email','password','problemId']
 keysForReport = ['email','password','longitude','latitude','title','description','category','imageUrl']
 
 def check_auth_for_modules(email,password):
@@ -54,7 +55,7 @@ def check_auth(email,password):
                    for i, value in enumerate(row)) for row in cursor.fetchall()]
 
         if r:
-            cursor.execute("Select USR_id as id,USR_name as fullName, USR_email as email, \
+            cursor.execute("Select USR_id as id,USR_name as fullName, USR_email as email,USR_password as password, \
                 Institution.`INS_id` as roleId, Institution.`INS_name` as roleName from User,Institution\
                 where User.`USR_institution` = Institution.`INS_id` and \
                 USR_email ='%s' and USR_password='%s' and USR_activated = 1 " % (email,password))
@@ -184,7 +185,7 @@ def sendReport():
             jsonMessage = {'serviceCode': 1, 'data': None, 'exception':{'exceptionCode':7,'exceptionMessage':'E-mail or password incorrect'}}
             return jsonify(jsonMessage)   
     except:
-        jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query'}}
+        return jsonify({'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query'}})
 
 
 @app.route('/getUnorderedReportsByType', methods=['GET'])
@@ -328,7 +329,34 @@ def getReports():
 
     cursor.connection.close()
     return jsonify(jsonMessage)
-   
+
+
+@app.route('/acceptReport', methods=['POST'])
+def acceptReport():
+    if not request.json:
+        abort(400)
+    for key in keysForAccept:
+        if not key in request.json:
+            abort(400)
+
+    try:
+        conn = mysql.connect()
+        cursor = conn.cursor()
+        cursor.execute("SELECT USR_id FROM User WHERE USR_email ='%s' and USR_password ='%s' and USR_activated = 1" % (request.json['email'],request.json['password']))
+        result = [dict((cursor.description[i][0], value) \
+                   for i, value in enumerate(row)) for row in cursor.fetchall()]
+        if result:
+            userid = result[0]['USR_id']
+            cursor.execute("INSERT INTO ProblemCount (`PRC_problem`,`PRC_user`) VALUES ('%s','%s')" % (request.json['problemId'],userid))
+            conn.commit()
+            cursor.connection.close()
+            return jsonify({'serviceCode':0, 'data': None, 'exception': None})
+        else:
+            cursor.connection.close()
+            return jsonify({'serviceCode': 1, 'data': None, 'exception':{'exceptionCode':7,'exceptionMessage':'E-mail or password incorrect'}})   
+    except:
+        return jsonify({'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query'}})
+
 
 @app.errorhandler(400)
 def bad_request(error):

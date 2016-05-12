@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.24)
 # Database: smart_citizen
-# Generation Time: 2016-05-11 19:25:40 +0000
+# Generation Time: 2016-05-12 17:27:19 +0000
 # ************************************************************
 
 
@@ -186,7 +186,8 @@ INSERT INTO `Location` (`LOC_id`, `LOC_neighborhood`, `LOC_latitude`, `LOC_longi
 VALUES
 	(1,1,40.990755,28.716683),
 	(3,1,40.990347,28.719055),
-	(35,1,40.995466,28.714455);
+	(35,1,40.995466,28.714455),
+	(36,1,40.996431,28.706701);
 
 /*!40000 ALTER TABLE `Location` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -255,12 +256,35 @@ LOCK TABLES `Problem` WRITE;
 
 INSERT INTO `Problem` (`PRB_id`, `PRB_category`, `PRB_location`, `PRB_state`, `PRB_title`, `PRB_explanation`, `PRB_authorizedUser`, `PRB_count`, `PRB_createdDate`, `PRB_updatedDate`, `PRB_reportingUser`)
 VALUES
-	(4,7,3,1,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',NULL,10,'2016-03-18','2016-03-25',24),
-	(10,1,1,1,'Elektrik Direği Işığı','Sokağın başındaki elektrik direğinin ışığı yanmıyor',NULL,10,'2016-03-20',NULL,23),
-	(38,1,35,1,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,10,'2016-05-05',NULL,23);
+	(4,7,3,0,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',NULL,9,'2016-03-18','2016-03-25',24),
+	(10,1,1,0,'Elektrik Direği Işığı','Sokağın başındaki elektrik direğinin ışığı yanmıyor',NULL,9,'2016-03-20','2016-03-25',23),
+	(38,1,35,0,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,9,'2016-05-05','2016-05-25',23),
+	(39,3,36,0,'Kanalizasyon tıkalı','Sokakta kanalizasyon tıkandı. Logar kapağını üzerinden su taşıyor',NULL,9,'2016-05-12','2016-05-25',23);
 
 /*!40000 ALTER TABLE `Problem` ENABLE KEYS */;
 UNLOCK TABLES;
+
+
+# Dump of table ProblemCount
+# ------------------------------------------------------------
+
+DROP TABLE IF EXISTS `ProblemCount`;
+
+CREATE TABLE `ProblemCount` (
+  `PRC_user` int(11) unsigned NOT NULL,
+  `PRC_problem` int(11) unsigned NOT NULL,
+  PRIMARY KEY (`PRC_user`,`PRC_problem`),
+  KEY `PRC_problem` (`PRC_problem`),
+  CONSTRAINT `problemcount_ibfk_1` FOREIGN KEY (`PRC_user`) REFERENCES `User` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `problemcount_ibfk_2` FOREIGN KEY (`PRC_problem`) REFERENCES `Problem` (`PRB_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;
+
+
+DELIMITER ;;
+/*!50003 SET SESSION SQL_MODE="STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION" */;;
+/*!50003 CREATE */ /*!50017 DEFINER=`root`@`localhost` */ /*!50003 TRIGGER `countAccept` AFTER INSERT ON `ProblemCount` FOR EACH ROW UPDATE Problem SET `PRB_count` = `PRB_count` + 1 WHERE new.`PRC_problem` = `PRB_id` */;;
+DELIMITER ;
+/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;
 
 
 # Dump of table ProblemImage
@@ -271,7 +295,7 @@ DROP TABLE IF EXISTS `ProblemImage`;
 CREATE TABLE `ProblemImage` (
   `PRI_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `PRI_problem` int(11) NOT NULL,
-  `PRI_imageUrl` varchar(100) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
+  `PRI_imageUrl` varchar(300) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`PRI_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;
 
@@ -280,9 +304,10 @@ LOCK TABLES `ProblemImage` WRITE;
 
 INSERT INTO `ProblemImage` (`PRI_id`, `PRI_problem`, `PRI_imageUrl`)
 VALUES
-	(15,38,'falancaadres.jpg'),
-	(16,10,'falancaadres.jpg'),
-	(17,4,'falancaadres.jpg');
+	(15,38,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
+	(16,10,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
+	(17,4,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
+	(18,39,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png');
 
 /*!40000 ALTER TABLE `ProblemImage` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -304,10 +329,10 @@ LOCK TABLES `ProblemState` WRITE;
 
 INSERT INTO `ProblemState` (`PRS_id`, `PRS_name`)
 VALUES
-	(1,'Görülmedi'),
-	(2,'İnceleniyor'),
-	(3,'Yapım Aşamasında'),
-	(4,'Problem Giderildi');
+	(0,'New'),
+	(1,'Accepted'),
+	(2,'Working'),
+	(3,'Done');
 
 /*!40000 ALTER TABLE `ProblemState` ENABLE KEYS */;
 UNLOCK TABLES;
