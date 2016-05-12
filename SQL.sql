@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.24)
 # Database: smart_citizen
-# Generation Time: 2016-05-12 17:36:36 +0000
+# Generation Time: 2016-05-12 19:44:28 +0000
 # ************************************************************
 
 
@@ -241,16 +241,28 @@ CREATE TABLE `Problem` (
   PRIMARY KEY (`PRB_id`),
   KEY `PRB_category` (`PRB_category`),
   KEY `PRB_location` (`PRB_location`),
+  KEY `PRB_state` (`PRB_state`),
   KEY `PRB_authorizedUser` (`PRB_authorizedUser`),
   KEY `PRB_reportingUser` (`PRB_reportingUser`),
-  KEY `PRB_state` (`PRB_state`),
   CONSTRAINT `problem_ibfk_1` FOREIGN KEY (`PRB_category`) REFERENCES `Category` (`CAT_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `problem_ibfk_2` FOREIGN KEY (`PRB_location`) REFERENCES `Location` (`LOC_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `problem_ibfk_3` FOREIGN KEY (`PRB_state`) REFERENCES `ProblemState` (`PRS_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `problem_ibfk_5` FOREIGN KEY (`PRB_authorizedUser`) REFERENCES `Users` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `problem_ibfk_6` FOREIGN KEY (`PRB_reportingUser`) REFERENCES `User` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `problem_ibfk_7` FOREIGN KEY (`PRB_state`) REFERENCES `ProblemState` (`PRS_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `problem_ibfk_6` FOREIGN KEY (`PRB_reportingUser`) REFERENCES `User` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;
 
+LOCK TABLES `Problem` WRITE;
+/*!40000 ALTER TABLE `Problem` DISABLE KEYS */;
+
+INSERT INTO `Problem` (`PRB_id`, `PRB_category`, `PRB_location`, `PRB_state`, `PRB_title`, `PRB_explanation`, `PRB_authorizedUser`, `PRB_count`, `PRB_createdDate`, `PRB_updatedDate`, `PRB_reportingUser`)
+VALUES
+	(4,7,3,1,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',NULL,9,'2016-03-18','2016-03-25',24),
+	(10,1,1,1,'Elektrik Direği Işığı','Sokağın başındaki elektrik direğinin ışığı yanmıyor',NULL,9,'2016-03-20','2016-03-25',23),
+	(38,1,35,1,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,9,'2016-05-05','2016-05-25',23),
+	(39,3,36,1,'Kanalizasyon tıkalı','Sokakta kanalizasyon tıkandı. Logar kapağını üzerinden su taşıyor',NULL,9,'2016-05-12','2016-05-25',23);
+
+/*!40000 ALTER TABLE `Problem` ENABLE KEYS */;
+UNLOCK TABLES;
 
 
 # Dump of table ProblemCount
@@ -282,9 +294,11 @@ DROP TABLE IF EXISTS `ProblemImage`;
 
 CREATE TABLE `ProblemImage` (
   `PRI_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `PRI_problem` int(11) NOT NULL,
+  `PRI_problem` int(11) unsigned DEFAULT NULL,
   `PRI_imageUrl` varchar(300) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (`PRI_id`)
+  PRIMARY KEY (`PRI_id`),
+  KEY `PRI_problem` (`PRI_problem`),
+  CONSTRAINT `problemimage_ibfk_1` FOREIGN KEY (`PRI_problem`) REFERENCES `Problem` (`PRB_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;
 
 LOCK TABLES `ProblemImage` WRITE;
@@ -292,10 +306,10 @@ LOCK TABLES `ProblemImage` WRITE;
 
 INSERT INTO `ProblemImage` (`PRI_id`, `PRI_problem`, `PRI_imageUrl`)
 VALUES
-	(15,38,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
+	(15,4,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
 	(16,10,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
-	(17,4,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
-	(18,39,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png');
+	(17,38,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
+	(18,38,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png');
 
 /*!40000 ALTER TABLE `ProblemImage` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -308,7 +322,7 @@ DROP TABLE IF EXISTS `ProblemState`;
 
 CREATE TABLE `ProblemState` (
   `PRS_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
-  `PRS_name` varchar(15) COLLATE utf8_turkish_ci DEFAULT NULL,
+  `PRS_name` varchar(20) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`PRS_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;
 

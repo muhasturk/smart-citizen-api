@@ -169,8 +169,8 @@ def sendReport():
             conn.commit()
             locationId = cursor.lastrowid
 
-            cursor.execute("INSERT INTO Problem (PRB_category,PRB_location,PRB_state,PRB_title, PRB_explanation,PRB_reportingUser, PRB_createdDate) \
-                VALUES ('%d','%d',1,'%s','%s','%d',CURDATE());" % (request.json['category'],locationId,request.json['title'],request.json['description'],userid))
+            cursor.execute("INSERT INTO Problem (PRB_category,PRB_location,PRB_state,PRB_title, PRB_explanation,PRB_reportingUser, PRB_createdDate, PRB_count) \
+                VALUES ('%d','%d',1,'%s','%s','%d',CURDATE(),1);" % (request.json['category'],locationId,request.json['title'],request.json['description'],userid))
             conn.commit()
             problemid = cursor.lastrowid
 
@@ -178,8 +178,8 @@ def sendReport():
                 VALUES ('%d','%s');" % (problemid,request.json['imageUrl']))
             conn.commit()
             cursor.connection.close()
-            jsonMessage = get_report_details_for_modules(problemid)
-            return jsonMessage
+            jsonMessage = {'serviceCode': 0, 'data': None, 'exception': None}
+            return jsonify(jsonMessage)
         else:
             cursor.connection.close()
             jsonMessage = {'serviceCode': 1, 'data': None, 'exception':{'exceptionCode':7,'exceptionMessage':'E-mail or password incorrect'}}
