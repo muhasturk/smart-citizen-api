@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 mysql = MySQL()
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'mustafaengin'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'mustafaengin  '
 app.config['MYSQL_DATABASE_DB'] = 'smart'
 app.config['MYSQL_DATABASE_HOST'] = '127.0.0.1'
 app.config['MYSQL_DATABASE_CHARSET'] = 'utf8'
@@ -368,9 +368,10 @@ def getReportDetailsByUserId():
 
     else:
         try:
-            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as reportType, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description, \
-                Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude from Problem, Location, Category \
-                where Problem.`PRB_location` = Location.`LOC_id` and Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_reportingUser` = '%s'" % (userId))
+            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as reportType, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description,\
+                Problem.`PRB_count` as count, `ProblemImage`.`PRI_imageUrl` as imageUrl, ProblemState.`PRS_name` as status, ProblemState.`PRS_id` as statusId,  Category.`CAT_id` as reportId \
+                from Problem, Category, ProblemState, ProblemImage where Problem.`PRB_category` = Category.`CAT_id` and \
+                ProblemImage.`PRI_problem` = Problem.`PRB_id` and Problem.`PRB_state` = ProblemState.`PRS_id` and Problem.`PRB_reportingUser` = '%s'" % (userId))
             reports = [dict((cursor.description[i][0], value) \
                    for i, value in enumerate(row)) for row in cursor.fetchall()]
             if reports:
