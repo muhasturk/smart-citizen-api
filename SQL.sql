@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.24)
 # Database: smart_citizen
-# Generation Time: 2016-05-13 01:12:16 +0000
+# Generation Time: 2016-05-13 02:00:01 +0000
 # ************************************************************
 
 
@@ -258,8 +258,8 @@ INSERT INTO `Problem` (`PRB_id`, `PRB_category`, `PRB_location`, `PRB_state`, `P
 VALUES
 	(4,7,3,1,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',NULL,9,'2016-03-18','2016-03-25',24),
 	(10,1,1,1,'Elektrik Direği Işığı','Sokağın başındaki elektrik direğinin ışığı yanmıyor',NULL,9,'2016-03-20','2016-03-25',23),
-	(38,1,35,1,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,9,'2016-05-05','2016-05-25',23),
-	(39,3,36,1,'Kanalizasyon tıkalı','Sokakta kanalizasyon tıkandı. Logar kapağını üzerinden su taşıyor',NULL,9,'2016-05-12','2016-05-25',23);
+	(38,1,35,2,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,14,'2016-05-05','2016-05-25',23),
+	(39,3,36,3,'Kanalizasyon tıkalı','Sokakta kanalizasyon tıkandı. Logar kapağını üzerinden su taşıyor',NULL,15,'2016-05-12','2016-05-25',23);
 
 /*!40000 ALTER TABLE `Problem` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -308,7 +308,8 @@ INSERT INTO `ProblemImage` (`PRI_id`, `PRI_problem`, `PRI_imageUrl`)
 VALUES
 	(15,4,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
 	(16,10,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
-	(17,38,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png');
+	(17,38,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
+	(23,39,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png');
 
 /*!40000 ALTER TABLE `ProblemImage` ENABLE KEYS */;
 UNLOCK TABLES;

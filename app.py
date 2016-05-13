@@ -362,7 +362,7 @@ def getReportDetailsByUserId():
     userId = request.args.get('userId')
     conn = mysql.connect()
     cursor = conn.cursor()
-
+    reports = {}
     if userId == None:  
         jsonMessage = {'serviceCode' : 1, 'data':None, 'exception':{'exceptionCode': 9, 'exceptionMessage': 'There is no UserId parameter'}}
 
@@ -371,9 +371,16 @@ def getReportDetailsByUserId():
             cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as type, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description,\
                 Problem.`PRB_count` as count, `ProblemImage`.`PRI_imageUrl` as imageUrl, ProblemState.`PRS_name` as status, ProblemState.`PRS_id` as statusId,  Category.`CAT_id` as typeId \
                 from Problem, Category, ProblemState, ProblemImage where Problem.`PRB_category` = Category.`CAT_id` and \
-                ProblemImage.`PRI_problem` = Problem.`PRB_id` and Problem.`PRB_state` = ProblemState.`PRS_id` and Problem.`PRB_reportingUser` = '%s'" % (userId))
-            reports = [dict((cursor.description[i][0], value) \
-                   for i, value in enumerate(row)) for row in cursor.fetchall()]
+                ProblemImage.`PRI_problem` = Problem.`PRB_id` and Problem.`PRB_state` = ProblemState.`PRS_id` and\
+                 Problem.`PRB_reportingUser` = '%s' ORDER BY statusId ASC" % (userId))
+            temp = ""
+            for row in cursor.fetchall():
+                if temp == row[7]:
+                    reports[row[7]].append(dict((cursor.description[a][0], value) for a, value in enumerate(row)))
+                else:
+                    reports[row[7]] = [dict((cursor.description[i][0], value) for i, value in enumerate(row))]
+                    temp = row[7]
+
             if reports:
                 jsonMessage = {'serviceCode':0, 'data': reports, 'exception': None}
             else:
