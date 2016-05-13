@@ -357,6 +357,32 @@ def acceptReport():
     except:
         return jsonify({'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query'}})
 
+@app.route('/getReportsByUserId', methods=['GET'])
+def getReportDetailsByUserId():
+    userId = request.args.get('userId')
+    conn = mysql.connect()
+    cursor = conn.cursor()
+
+    if userId == None:  
+        jsonMessage = {'serviceCode' : 1, 'data':None, 'exception':{'exceptionCode': 9, 'exceptionMessage': 'There is no UserId parameter'}}
+
+    else:
+        try:
+            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as reportType, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description, \
+                Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude from Problem, Location, Category \
+                where Problem.`PRB_location` = Location.`LOC_id` and Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_reportingUser` = '%s'" % (userId))
+            reports = [dict((cursor.description[i][0], value) \
+                   for i, value in enumerate(row)) for row in cursor.fetchall()]
+            if reports:
+                jsonMessage = {'serviceCode':0, 'data': reports, 'exception': None}
+            else:
+                jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 10, 'exceptionMessage': 'There is no report for this userId'}}
+        except:
+            jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query'}}
+
+    cursor.connection.close()
+    return jsonify(jsonMessage)
+
 
 @app.errorhandler(400)
 def bad_request(error):
