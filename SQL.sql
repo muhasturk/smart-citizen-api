@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.24)
 # Database: smart_citizen
-# Generation Time: 2016-05-12 19:44:28 +0000
+# Generation Time: 2016-05-13 01:12:16 +0000
 # ************************************************************
 
 
@@ -308,8 +308,7 @@ INSERT INTO `ProblemImage` (`PRI_id`, `PRI_problem`, `PRI_imageUrl`)
 VALUES
 	(15,4,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
 	(16,10,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
-	(17,38,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
-	(18,38,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png');
+	(17,38,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png');
 
 /*!40000 ALTER TABLE `ProblemImage` ENABLE KEYS */;
 UNLOCK TABLES;
