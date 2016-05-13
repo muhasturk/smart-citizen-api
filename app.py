@@ -291,7 +291,7 @@ def getReports():
 
     if reportType == "0" or reportType == None:
         try:
-            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as reportType, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description, \
+            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as type, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description, \
                 Problem.`PRB_state` as statusId, `ProblemState`.`PRS_name` as status, Problem.`PRB_count` as count \
                 from Problem, Category, ProblemState \
                 where Problem.`PRB_state` = ProblemState.`PRS_id`and Problem.`PRB_category` = Category.`CAT_id` ORDER BY Category.`CAT_name`")
@@ -309,7 +309,7 @@ def getReports():
 
     else:
         try:
-            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as reportType, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description, \
+            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as type, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description, \
                 Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude from Problem, Location, Category \
                 where Problem.`PRB_location` = Location.`LOC_id` and Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_category` = '%s'" % (reportType))
             i = 0
@@ -368,8 +368,8 @@ def getReportDetailsByUserId():
 
     else:
         try:
-            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as reportType, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description,\
-                Problem.`PRB_count` as count, `ProblemImage`.`PRI_imageUrl` as imageUrl, ProblemState.`PRS_name` as status, ProblemState.`PRS_id` as statusId,  Category.`CAT_id` as reportId \
+            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as type, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description,\
+                Problem.`PRB_count` as count, `ProblemImage`.`PRI_imageUrl` as imageUrl, ProblemState.`PRS_name` as status, ProblemState.`PRS_id` as statusId,  Category.`CAT_id` as typeId \
                 from Problem, Category, ProblemState, ProblemImage where Problem.`PRB_category` = Category.`CAT_id` and \
                 ProblemImage.`PRI_problem` = Problem.`PRB_id` and Problem.`PRB_state` = ProblemState.`PRS_id` and Problem.`PRB_reportingUser` = '%s'" % (userId))
             reports = [dict((cursor.description[i][0], value) \
