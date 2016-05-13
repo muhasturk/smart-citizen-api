@@ -5,11 +5,11 @@ from flask import Flask,jsonify,abort,make_response,request
 from flaskext.mysql import MySQL
 app = Flask(__name__)
 
-
 conn = mysql.connect()
 cursor = conn.cursor()
-cursor.execute("SELECT * FROM User ")
-r = [dict((cursor.description[i][0], value) for i, value in enumerate(row)) for row in cursor.fetchall()]
+cursor.execute(“INSERT INTO User (name,email) VALUES (‘Engin’,’iskengin@gmai.com’)")
+conn.commit()
+id = cursor.lastrowid
 cursor.connection.close()
 
 mysql = MySQL()
