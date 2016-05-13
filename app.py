@@ -7,10 +7,11 @@ app = Flask(__name__)
 
 conn = mysql.connect()
 cursor = conn.cursor()
-cursor.execute(“INSERT INTO User (name,email) VALUES (‘Engin’,’iskengin@gmai.com’)")
+cursor.execute(“UPDATE User SET email=‘engin@info.com’ WHERE email=‘ali@info.com’ ”)
 conn.commit()
 id = cursor.lastrowid
 cursor.connection.close()
+
 
 mysql = MySQL()
 app.config['MYSQL_DATABASE_USER'] = 'root'
