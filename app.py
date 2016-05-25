@@ -184,8 +184,8 @@ def sendReport():
             cursor.connection.close()
             jsonMessage = {'serviceCode': 1, 'data': None, 'exception':{'exceptionCode':7,'exceptionMessage':'E-mail or password incorrect'}}
             return jsonify(jsonMessage)   
-    except:
-        return jsonify({'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query'}})
+    except Exception as e:
+        return jsonify({'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query - '+str(e)}})
 
 
 @app.route('/getUnorderedReportsByType', methods=['GET'])
