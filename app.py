@@ -16,7 +16,7 @@ mysql.init_app(app)
 keysForLogin = ['email','password']
 keysForRegister = ['fullName','email','password','deviceToken']
 keysForAccept = ['email','password','problemId']
-keysForReport = ['email','password','longitude','latitude','title','description','category','imageUrl']
+keysForReport = ['email','password','longitude','latitude','title','description','typeId','imageUrl']
 
 def check_auth_for_modules(email,password):
     conn = mysql.connect()
@@ -170,7 +170,7 @@ def sendReport():
             locationId = cursor.lastrowid
 
             cursor.execute("INSERT INTO Problem (PRB_category,PRB_location,PRB_state,PRB_title, PRB_explanation,PRB_reportingUser, PRB_createdDate, PRB_count) \
-                VALUES ('%d','%d',1,'%s','%s','%d',CURDATE(),1);" % (request.json['category'],locationId,request.json['title'],request.json['description'],userid))
+                VALUES ('%d','%d',1,'%s','%s','%d',CURDATE(),1);" % (request.json['typeId'],locationId,request.json['title'],request.json['description'],userid))
             conn.commit()
             problemid = cursor.lastrowid
 
