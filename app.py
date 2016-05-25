@@ -16,7 +16,7 @@ mysql.init_app(app)
 keysForLogin = ['email','password']
 keysForRegister = ['fullName','email','password','deviceToken']
 keysForAccept = ['email','password','problemId']
-keysForReport = ['email','password','longitude','latitude','title','description','typeId','imageUrl']
+keysForReport = ['email','password','longitude','latitude','title','description','categoryId','imageUrl']
 
 def check_auth_for_modules(email,password):
     conn = mysql.connect()
@@ -77,7 +77,7 @@ def check_auth(email,password):
 def get_report_details_for_modules(reportID):
     reportId = reportID
     if reportId == None:
-        
+
         jsonMessage = {'serviceCode' : 1, 'data':None, 'exception':{'exceptionCode': 4, 'exceptionMessage': 'There is no reportID parameter'}}
 
     else:
@@ -102,7 +102,7 @@ def get_report_details_for_modules(reportID):
                 jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 5, 'exceptionMessage': 'There is no report for this reportID'}}
         except:
             jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query'}}
-    
+
     return jsonify(jsonMessage)
 
 
@@ -128,7 +128,7 @@ def register():
 
     conn = mysql.connect()
     cursor = conn.cursor()
-    try:   
+    try:
         cursor.execute("SELECT * FROM User WHERE USR_email ='%s'" % (request.json['email']))
         r = [dict((cursor.description[i][0], value) \
                    for i, value in enumerate(row)) for row in cursor.fetchall()]
@@ -137,7 +137,7 @@ def register():
         else:
             cursor.execute("INSERT INTO User (USR_email,USR_name,USR_password,USR_institution, USR_activated, USR_createdDate, USR_deviceToken) \
                 VALUES ('%s','%s','%s',0,1,CURDATE(),'%s');" % (request.json['email'],request.json['fullName'], request.json['password'],request.json['deviceToken']))
-            
+
             conn.commit()
             result = check_auth(request.json['email'],request.json['password'])
             #id = cursor.lastrowid
@@ -170,7 +170,7 @@ def sendReport():
             locationId = cursor.lastrowid
 
             cursor.execute("INSERT INTO Problem (PRB_category,PRB_location,PRB_state,PRB_title, PRB_explanation,PRB_reportingUser, PRB_createdDate, PRB_count) \
-                VALUES ('%d','%d',1,'%s','%s','%d',CURDATE(),1);" % (request.json['typeId'],locationId,request.json['title'],request.json['description'],userid))
+                VALUES ('%d','%d',1,'%s','%s','%d',CURDATE(),1);" % (request.json['categoryId'],locationId,request.json['title'],request.json['description'],userid))
             conn.commit()
             problemid = cursor.lastrowid
 
@@ -183,7 +183,7 @@ def sendReport():
         else:
             cursor.connection.close()
             jsonMessage = {'serviceCode': 1, 'data': None, 'exception':{'exceptionCode':7,'exceptionMessage':'E-mail or password incorrect'}}
-            return jsonify(jsonMessage)   
+            return jsonify(jsonMessage)
     except Exception as e:
         return jsonify({'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query - '+str(e)}})
 
@@ -229,7 +229,7 @@ def getReportDetailsById():
     conn = mysql.connect()
     cursor = conn.cursor()
 
-    if reportId == None:  
+    if reportId == None:
         jsonMessage = {'serviceCode' : 1, 'data':None, 'exception':{'exceptionCode': 4, 'exceptionMessage': 'There is no reportId parameter'}}
 
     else:
@@ -353,7 +353,7 @@ def acceptReport():
             return jsonify({'serviceCode':0, 'data': None, 'exception': None})
         else:
             cursor.connection.close()
-            return jsonify({'serviceCode': 1, 'data': None, 'exception':{'exceptionCode':7,'exceptionMessage':'E-mail or password incorrect'}})   
+            return jsonify({'serviceCode': 1, 'data': None, 'exception':{'exceptionCode':7,'exceptionMessage':'E-mail or password incorrect'}})
     except:
         return jsonify({'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query'}})
 
@@ -363,7 +363,7 @@ def getReportDetailsByUserId():
     conn = mysql.connect()
     cursor = conn.cursor()
     reports = {}
-    if userId == None:  
+    if userId == None:
         jsonMessage = {'serviceCode' : 1, 'data':None, 'exception':{'exceptionCode': 9, 'exceptionMessage': 'There is no UserId parameter'}}
 
     else:
@@ -408,4 +408,3 @@ def not_found(error):
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80 ,debug=True)
     #host='0.0.0.0', port=80 ,
-
