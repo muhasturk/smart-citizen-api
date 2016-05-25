@@ -249,8 +249,8 @@ def getReportDetailsById():
                 jsonMessage = {'serviceCode':0, 'data': reports, 'exception': None}
             else:
                 jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 5, 'exceptionMessage': 'There is no report for this reportID'}}
-        except:
-            jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query'}}
+        except Exception as e:
+            jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query - '+str(e)}}
 
     cursor.connection.close()
     return jsonify(jsonMessage)
