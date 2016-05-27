@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.24)
 # Database: smart_citizen
-# Generation Time: 2016-05-13 02:00:01 +0000
+# Generation Time: 2016-05-27 08:31:42 +0000
 # ************************************************************
 
 
@@ -246,9 +246,9 @@ CREATE TABLE `Problem` (
   KEY `PRB_reportingUser` (`PRB_reportingUser`),
   CONSTRAINT `problem_ibfk_1` FOREIGN KEY (`PRB_category`) REFERENCES `Category` (`CAT_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `problem_ibfk_2` FOREIGN KEY (`PRB_location`) REFERENCES `Location` (`LOC_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `problem_ibfk_3` FOREIGN KEY (`PRB_state`) REFERENCES `ProblemState` (`PRS_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `problem_ibfk_5` FOREIGN KEY (`PRB_authorizedUser`) REFERENCES `Users` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `problem_ibfk_6` FOREIGN KEY (`PRB_reportingUser`) REFERENCES `User` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `problem_ibfk_6` FOREIGN KEY (`PRB_reportingUser`) REFERENCES `User` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `problem_ibfk_7` FOREIGN KEY (`PRB_state`) REFERENCES `ProblemState` (`PRS_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;
 
 LOCK TABLES `Problem` WRITE;
@@ -256,13 +256,23 @@ LOCK TABLES `Problem` WRITE;
 
 INSERT INTO `Problem` (`PRB_id`, `PRB_category`, `PRB_location`, `PRB_state`, `PRB_title`, `PRB_explanation`, `PRB_authorizedUser`, `PRB_count`, `PRB_createdDate`, `PRB_updatedDate`, `PRB_reportingUser`)
 VALUES
-	(4,7,3,1,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',NULL,9,'2016-03-18','2016-03-25',24),
-	(10,1,1,1,'Elektrik Direği Işığı','Sokağın başındaki elektrik direğinin ışığı yanmıyor',NULL,9,'2016-03-20','2016-03-25',23),
-	(38,1,35,2,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,14,'2016-05-05','2016-05-25',23),
+	(4,7,3,0,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',NULL,9,'2016-03-18','2016-03-25',24),
+	(10,1,1,1,'Elektrik Direği Işığı','Sokağın başındaki elektrik direğinin ışığı yanmıyor',NULL,10,'2016-03-20','2016-03-25',23),
+	(38,1,35,2,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,15,'2016-05-05','2016-05-25',23),
 	(39,3,36,3,'Kanalizasyon tıkalı','Sokakta kanalizasyon tıkandı. Logar kapağını üzerinden su taşıyor',NULL,15,'2016-05-12','2016-05-25',23);
 
 /*!40000 ALTER TABLE `Problem` ENABLE KEYS */;
 UNLOCK TABLES;
+
+DELIMITER ;;
+/*!50003 SET SESSION SQL_MODE="STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION" */;;
+/*!50003 CREATE */ /*!50017 DEFINER=`root`@`localhost` */ /*!50003 TRIGGER `changeStatus` BEFORE UPDATE ON `Problem` FOR EACH ROW IF old.PRB_count < 10 and NEW.PRB_count = 10 THEN
+	SET NEW.PRB_state = 1;
+ELSEIF old.PRB_count > 5 and NEW.PRB_count = 5 THEN
+	SET NEW.PRB_state = 0;
+END IF */;;
+DELIMITER ;
+/*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;
 
 
 # Dump of table ProblemCount
@@ -273,6 +283,7 @@ DROP TABLE IF EXISTS `ProblemCount`;
 CREATE TABLE `ProblemCount` (
   `PRC_user` int(11) unsigned NOT NULL,
   `PRC_problem` int(11) unsigned NOT NULL,
+  `PRC_assent` tinyint(11) NOT NULL,
   PRIMARY KEY (`PRC_user`,`PRC_problem`),
   KEY `PRC_problem` (`PRC_problem`),
   CONSTRAINT `problemcount_ibfk_1` FOREIGN KEY (`PRC_user`) REFERENCES `User` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -282,7 +293,11 @@ CREATE TABLE `ProblemCount` (
 
 DELIMITER ;;
 /*!50003 SET SESSION SQL_MODE="STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION" */;;
-/*!50003 CREATE */ /*!50017 DEFINER=`root`@`localhost` */ /*!50003 TRIGGER `countAccept` AFTER INSERT ON `ProblemCount` FOR EACH ROW UPDATE Problem SET `PRB_count` = `PRB_count` + 1 WHERE new.`PRC_problem` = `PRB_id` */;;
+/*!50003 CREATE */ /*!50017 DEFINER=`root`@`localhost` */ /*!50003 TRIGGER `voteReport` AFTER INSERT ON `ProblemCount` FOR EACH ROW IF new.PRC_assent = 1 THEN
+		UPDATE Problem SET PRB_count = PRB_count + 1 WHERE new.PRC_problem = PRB_id;
+ELSE
+		UPDATE Problem SET PRB_count = PRB_count - 1 WHERE new.PRC_problem = PRB_id;
+END IF */;;
 DELIMITER ;
 /*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;
 
@@ -321,7 +336,7 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `ProblemState`;
 
 CREATE TABLE `ProblemState` (
-  `PRS_id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `PRS_id` int(11) unsigned NOT NULL,
   `PRS_name` varchar(20) COLLATE utf8_turkish_ci NOT NULL DEFAULT '',
   PRIMARY KEY (`PRS_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;
@@ -331,10 +346,10 @@ LOCK TABLES `ProblemState` WRITE;
 
 INSERT INTO `ProblemState` (`PRS_id`, `PRS_name`)
 VALUES
-	(1,'New'),
-	(2,'Accepted'),
-	(3,'Working'),
-	(4,'Done');
+	(0,'New'),
+	(1,'Accepted'),
+	(2,'Working'),
+	(3,'Done');
 
 /*!40000 ALTER TABLE `ProblemState` ENABLE KEYS */;
 UNLOCK TABLES;
