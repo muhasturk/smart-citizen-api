@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.24)
 # Database: smart_citizen
-# Generation Time: 2016-05-27 08:31:42 +0000
+# Generation Time: 2016-05-27 16:42:37 +0000
 # ************************************************************
 
 
@@ -246,9 +246,9 @@ CREATE TABLE `Problem` (
   KEY `PRB_reportingUser` (`PRB_reportingUser`),
   CONSTRAINT `problem_ibfk_1` FOREIGN KEY (`PRB_category`) REFERENCES `Category` (`CAT_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `problem_ibfk_2` FOREIGN KEY (`PRB_location`) REFERENCES `Location` (`LOC_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `problem_ibfk_5` FOREIGN KEY (`PRB_authorizedUser`) REFERENCES `Users` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `problem_ibfk_6` FOREIGN KEY (`PRB_reportingUser`) REFERENCES `User` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `problem_ibfk_7` FOREIGN KEY (`PRB_state`) REFERENCES `ProblemState` (`PRS_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  CONSTRAINT `problem_ibfk_7` FOREIGN KEY (`PRB_state`) REFERENCES `ProblemState` (`PRS_id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `problem_ibfk_8` FOREIGN KEY (`PRB_authorizedUser`) REFERENCES `User` (`USR_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;
 
 LOCK TABLES `Problem` WRITE;
@@ -256,7 +256,7 @@ LOCK TABLES `Problem` WRITE;
 
 INSERT INTO `Problem` (`PRB_id`, `PRB_category`, `PRB_location`, `PRB_state`, `PRB_title`, `PRB_explanation`, `PRB_authorizedUser`, `PRB_count`, `PRB_createdDate`, `PRB_updatedDate`, `PRB_reportingUser`)
 VALUES
-	(4,7,3,0,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',NULL,9,'2016-03-18','2016-03-25',24),
+	(4,7,3,0,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',23,9,'2016-03-18','2016-03-25',24),
 	(10,1,1,1,'Elektrik Direği Işığı','Sokağın başındaki elektrik direğinin ışığı yanmıyor',NULL,10,'2016-03-20','2016-03-25',23),
 	(38,1,35,2,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,15,'2016-05-05','2016-05-25',23),
 	(39,3,36,3,'Kanalizasyon tıkalı','Sokakta kanalizasyon tıkandı. Logar kapağını üzerinden su taşıyor',NULL,15,'2016-05-12','2016-05-25',23);

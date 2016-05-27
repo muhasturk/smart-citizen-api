@@ -84,26 +84,48 @@ def get_report_details_for_modules(reportID):
         try:
             conn = mysql.connect()
             cursor = conn.cursor()
-            cursor.execute("Select Problem.PRB_id as problemId, User.`USR_name` as fullName, Problem.`PRB_title` as title, Category.`CAT_name` as category,\
-                Problem.`PRB_explanation` as description, ProblemState.`PRS_name` as state, City.`CTY_name` as city ,District.`DST_name` as district, \
-                Neighborhood.`NBH_name` as neighborhood, Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude, \
-                Problem.`PRB_authorizedUser` as authorizedUser, DATE_FORMAT(Problem.`PRB_createdDate`, '%%d-%%m-%%Y')  as createdDate, \
-                DATE_FORMAT(Problem.`PRB_updatedDate`, '%%d-%%m-%%Y')  as updatedDate, ProblemImage.PRI_imageUrl as imageUrl \
-                from Problem, Category, User, ProblemState, Location, Neighborhood, District, City, ProblemImage \
-                WHERE Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_reportingUser` = User.`USR_id` and Problem.`PRB_state` = ProblemState.`PRS_id` and \
-                Problem.`PRB_location` = Location.`LOC_id` and Location.`LOC_neighborhood` = Neighborhood.`NBH_id` and Neighborhood.`NBH_district` = District.`DST_id` and\
-                District.`DST_city` = City.`CTY_id` and Problem.`PRB_id` = ProblemImage.`PRI_problem` and Problem.`PRB_id` = '%s'" % (reportId))
-            reports = [dict((cursor.description[i][0], value) \
+            cursor.execute("Select * From Problem WHERE Problem.PRB_authorizedUser != NULL and Problem.PRB_id = '%s'" % (reportId))
+            authorized = [dict((cursor.description[i][0], value) \
                    for i, value in enumerate(row)) for row in cursor.fetchall()]
+
+            if authorized:
+                cursor.execute("Select Problem.PRB_id as reportId, User.`USR_name` as createdBy, User.`USR_id` as createdById, Problem.`PRB_title` as title, \
+                    Category.`CAT_name` as category, Category.`CAT_id` as categoryId,Problem.`PRB_explanation` as description, \
+                    ProblemState.`PRS_name` as status, ProblemState.`PRS_id` as statusId, City.`CTY_name` as city, \
+                    District.`DST_name` as district, Neighborhood.`NBH_name` as neighborhood, Location.`LOC_latitude` as latitude, \
+                    Location.`LOC_longitude` as longitude, u.USR_name as authorizedUser, Problem.PRB_count as count, \
+                    DATE_FORMAT(Problem.`PRB_createdDate`, '%%d-%%m-%%Y')  as createdDate, \
+                    DATE_FORMAT(Problem.`PRB_updatedDate`, '%%d-%%m-%%Y')  as updatedDate, ProblemImage.PRI_imageUrl as imageUrl \
+                    from Problem, Category, User, ProblemState, Location, Neighborhood, District, City, ProblemImage, User as u\
+                    WHERE Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_reportingUser` = User.`USR_id` and Problem.`PRB_state` = ProblemState.`PRS_id` and \
+                    Problem.`PRB_location` = Location.`LOC_id` and Location.`LOC_neighborhood` = Neighborhood.`NBH_id` and Neighborhood.`NBH_district` = District.`DST_id` and \
+                    District.`DST_city` = City.`CTY_id` and Problem.`PRB_id` = ProblemImage.`PRI_problem` and u.USR_id = Problem.PRB_authorizedUser and Problem.`PRB_id` = '%s'" % (reportId))
+                reports = [dict((cursor.description[i][0], value) \
+                       for i, value in enumerate(row)) for row in cursor.fetchall()]
+            else:
+                cursor.execute("Select Problem.PRB_id as reportId, User.`USR_name` as createdBy, User.`USR_id` as createdById, Problem.`PRB_title` as title, \
+                    Category.`CAT_name` as category, Category.`CAT_id` as categoryId,Problem.`PRB_explanation` as description, \
+                    ProblemState.`PRS_name` as status, ProblemState.`PRS_id` as statusId, City.`CTY_name` as city, \
+                    District.`DST_name` as district, Neighborhood.`NBH_name` as neighborhood, Location.`LOC_latitude` as latitude, \
+                    Location.`LOC_longitude` as longitude, Problem.PRB_authorizedUser as authorizedUser, Problem.PRB_count as count,  \
+                    DATE_FORMAT(Problem.`PRB_createdDate`, '%%d-%%m-%%Y')  as createdDate, \
+                    DATE_FORMAT(Problem.`PRB_updatedDate`, '%%d-%%m-%%Y')  as updatedDate, ProblemImage.PRI_imageUrl as imageUrl \
+                    from Problem, Category, User, ProblemState, Location, Neighborhood, District, City, ProblemImage \
+                    WHERE Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_reportingUser` = User.`USR_id` and Problem.`PRB_state` = ProblemState.`PRS_id` and \
+                    Problem.`PRB_location` = Location.`LOC_id` and Location.`LOC_neighborhood` = Neighborhood.`NBH_id` and Neighborhood.`NBH_district` = District.`DST_id` and \
+                    District.`DST_city` = City.`CTY_id` and Problem.`PRB_id` = ProblemImage.`PRI_problem` and Problem.`PRB_id` = '%s'" % (reportId))
+                reports = [dict((cursor.description[i][0], value) \
+                       for i, value in enumerate(row)) for row in cursor.fetchall()]
+
             cursor.connection.close()
             if reports:
                 jsonMessage = {'serviceCode':0, 'data': reports, 'exception': None}
             else:
-                jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 5, 'exceptionMessage': 'There is no report for this reportID'}}
-        except:
-            jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query'}}
+                jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 5, 'exceptionMessage': authorized}}
+        except Exception as e:
+            jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query2'+str(e)}}
 
-    return jsonify(jsonMessage)
+    return jsonMessage
 
 
 @app.route('/memberLogin', methods=['POST'])
@@ -169,8 +191,8 @@ def sendReport():
             conn.commit()
             locationId = cursor.lastrowid
 
-            cursor.execute("INSERT INTO Problem (PRB_category,PRB_location,PRB_state,PRB_title, PRB_explanation,PRB_reportingUser, PRB_createdDate, PRB_count) \
-                VALUES ('%d','%d',1,'%s','%s','%d',CURDATE(),1);" % (request.json['categoryId'],locationId,request.json['title'],request.json['description'],userid))
+            cursor.execute("INSERT INTO Problem (PRB_category,PRB_location,PRB_state,PRB_title, PRB_explanation,PRB_reportingUser, PRB_createdDate, PRB_count, PRB_updatedDate) \
+                VALUES ('%d','%d',0,'%s','%s','%d',CURDATE(),0,CURDATE());" % (request.json['categoryId'],locationId,request.json['title'],request.json['description'],userid))
             conn.commit()
             problemid = cursor.lastrowid
 
@@ -178,14 +200,16 @@ def sendReport():
                 VALUES ('%d','%s');" % (problemid,request.json['imageUrl']))
             conn.commit()
             cursor.connection.close()
-            jsonMessage = {'serviceCode': 0, 'data': None, 'exception': None}
+
+            #jsonMessage = {'serviceCode': 0, 'data': None, 'exception': None}
+            jsonMessage = get_report_details_for_modules(problemid)
             return jsonify(jsonMessage)
         else:
             cursor.connection.close()
             jsonMessage = {'serviceCode': 1, 'data': None, 'exception':{'exceptionCode':7,'exceptionMessage':'E-mail or password incorrect'}}
             return jsonify(jsonMessage)
     except Exception as e:
-        return jsonify({'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query - '+str(e)}})
+        return jsonify({'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query2 - '+str(e)}})
 
 
 @app.route('/getUnorderedReportsByType', methods=['GET'])
@@ -406,5 +430,5 @@ def not_found(error):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80 ,debug=True)
+    app.run(host='0.0.0.0', port=80, debug=True)
     #host='0.0.0.0', port=80 ,
