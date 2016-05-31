@@ -83,12 +83,12 @@ def get_report_details_for_modules(reportID):
         try:
             conn = mysql.connect()
             cursor = conn.cursor()
-            cursor.execute("Select * From Problem WHERE Problem.PRB_authorizedUser != NULL and Problem.PRB_id = '%s'" % (reportId))
+            cursor.execute("Select * From Problem WHERE Problem.PRB_authorizedUser IS NOT NULL and Problem.PRB_id = '%s'" % (reportId))
             authorized = [dict((cursor.description[i][0], value) \
                    for i, value in enumerate(row)) for row in cursor.fetchall()]
 
             if authorized:
-                cursor.execute("Select Problem.PRB_id as id, User.`USR_name` as createdBy, User.`USR_id` as createdById, Problem.`PRB_title` as title, \
+                cursor.execute("Select Problem.PRB_id as icd, User.`USR_name` as createdBy, User.`USR_id` as createdById, Problem.`PRB_title` as title, \
                     Category.`CAT_name` as category, Category.`CAT_id` as categoryId,Problem.`PRB_explanation` as description, \
                     ProblemState.`PRS_name` as status, ProblemState.`PRS_id` as statusId, City.`CTY_name` as city, \
                     District.`DST_name` as district, Neighborhood.`NBH_name` as neighborhood, Location.`LOC_latitude` as latitude, \
@@ -102,7 +102,7 @@ def get_report_details_for_modules(reportID):
                 reports = [dict((cursor.description[i][0], value) \
                        for i, value in enumerate(row)) for row in cursor.fetchall()]
             else:
-                cursor.execute("Select Problem.PRB_id as id, User.`USR_name` as createdBy, User.`USR_id` as createdById, Problem.`PRB_title` as title, \
+                cursor.execute("Select Problem.PRB_id as ifd, User.`USR_name` as createdBy, User.`USR_id` as createdById, Problem.`PRB_title` as title, \
                     Category.`CAT_name` as category, Category.`CAT_id` as categoryId,Problem.`PRB_explanation` as description, \
                     ProblemState.`PRS_name` as status, ProblemState.`PRS_id` as statusId, City.`CTY_name` as city, \
                     District.`DST_name` as district, Neighborhood.`NBH_name` as neighborhood, Location.`LOC_latitude` as latitude, \
@@ -249,33 +249,8 @@ def getUnorderedReportsByType():
 @app.route('/getReportDetailsById', methods=['GET'])
 def getReportDetailsById():
     reportId = request.args.get('reportId')
-    conn = mysql.connect()
-    cursor = conn.cursor()
-
-    if reportId == None:
-        jsonMessage = {'serviceCode' : 1, 'data':None, 'exception':{'exceptionCode': 4, 'exceptionMessage': 'There is no reportId parameter'}}
-
-    else:
-        try:
-            cursor.execute("Select Problem.PRB_id as problemId, User.`USR_name` as fullName, Problem.`PRB_title` as title, Category.`CAT_name` as category,\
-                Problem.`PRB_explanation` as description, ProblemState.`PRS_name` as status, ProblemState.PRS_id as statusId, City.`CTY_name` as city ,District.`DST_name` as district, \
-                Neighborhood.`NBH_name` as neighborhood, Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude, \
-                Problem.`PRB_authorizedUser` as authorizedUser, DATE_FORMAT(Problem.`PRB_createdDate`, '%%d-%%m-%%Y')  as createdDate, \
-                DATE_FORMAT(Problem.`PRB_updatedDate`, '%%d-%%m-%%Y')  as updatedDate, ProblemImage.PRI_imageUrl as imageUrl \
-                from Problem, Category, User, ProblemState, Location, Neighborhood, District, City, ProblemImage \
-                WHERE Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_reportingUser` = User.`USR_id` and Problem.`PRB_state` = ProblemState.`PRS_id` and \
-                Problem.`PRB_location` = Location.`LOC_id` and Location.`LOC_neighborhood` = Neighborhood.`NBH_id` and Neighborhood.`NBH_district` = District.`DST_id` and\
-                District.`DST_city` = City.`CTY_id` and Problem.`PRB_id` = ProblemImage.`PRI_problem` and Problem.`PRB_id` = '%s'" % (reportId))
-            reports = [dict((cursor.description[i][0], value) \
-                   for i, value in enumerate(row)) for row in cursor.fetchall()]
-            if reports:
-                jsonMessage = {'serviceCode':0, 'data': reports, 'exception': None}
-            else:
-                jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 5, 'exceptionMessage': 'There is no report for this reportID'}}
-        except Exception as e:
-            jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query - '+str(e)}}
-
-    cursor.connection.close()
+    jsonMessage = get_report_details_for_modules(reportId)
+    return jsonify(jsonMessage)
     return jsonify(jsonMessage)
 
 
@@ -428,5 +403,5 @@ def not_found(error):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
+    app.run(host='0.0.0.0', port=80 ,debug=True)
     #host='0.0.0.0', port=80 ,
