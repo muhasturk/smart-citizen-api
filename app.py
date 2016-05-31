@@ -88,7 +88,7 @@ def get_report_details_for_modules(reportID):
                    for i, value in enumerate(row)) for row in cursor.fetchall()]
 
             if authorized:
-                cursor.execute("Select Problem.PRB_id as reportId, User.`USR_name` as createdBy, User.`USR_id` as createdById, Problem.`PRB_title` as title, \
+                cursor.execute("Select Problem.PRB_id as id, User.`USR_name` as createdBy, User.`USR_id` as createdById, Problem.`PRB_title` as title, \
                     Category.`CAT_name` as category, Category.`CAT_id` as categoryId,Problem.`PRB_explanation` as description, \
                     ProblemState.`PRS_name` as status, ProblemState.`PRS_id` as statusId, City.`CTY_name` as city, \
                     District.`DST_name` as district, Neighborhood.`NBH_name` as neighborhood, Location.`LOC_latitude` as latitude, \
@@ -102,7 +102,7 @@ def get_report_details_for_modules(reportID):
                 reports = [dict((cursor.description[i][0], value) \
                        for i, value in enumerate(row)) for row in cursor.fetchall()]
             else:
-                cursor.execute("Select Problem.PRB_id as reportId, User.`USR_name` as createdBy, User.`USR_id` as createdById, Problem.`PRB_title` as title, \
+                cursor.execute("Select Problem.PRB_id as id, User.`USR_name` as createdBy, User.`USR_id` as createdById, Problem.`PRB_title` as title, \
                     Category.`CAT_name` as category, Category.`CAT_id` as categoryId,Problem.`PRB_explanation` as description, \
                     ProblemState.`PRS_name` as status, ProblemState.`PRS_id` as statusId, City.`CTY_name` as city, \
                     District.`DST_name` as district, Neighborhood.`NBH_name` as neighborhood, Location.`LOC_latitude` as latitude, \
