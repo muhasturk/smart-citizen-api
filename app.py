@@ -1,4 +1,3 @@
-
 import json
 
 from flask import Flask,jsonify,abort,make_response,request
@@ -15,7 +14,7 @@ mysql.init_app(app)
 
 keysForLogin = ['email','password']
 keysForRegister = ['fullName','email','password','deviceToken']
-keysForAccept = ['email','password','problemId']
+keysForAccept = ['email','password','problemId','assent']
 keysForReport = ['email','password','longitude','latitude','title','description','categoryId','imageUrl']
 
 def check_auth_for_modules(email,password):
@@ -355,14 +354,13 @@ def getReports():
     return jsonify(jsonMessage)
 
 
-@app.route('/acceptReport', methods=['POST'])
+@app.route('/voteReport', methods=['POST'])
 def acceptReport():
     if not request.json:
         abort(400)
     for key in keysForAccept:
         if not key in request.json:
             abort(400)
-
     try:
         conn = mysql.connect()
         cursor = conn.cursor()
@@ -371,7 +369,7 @@ def acceptReport():
                    for i, value in enumerate(row)) for row in cursor.fetchall()]
         if result:
             userid = result[0]['USR_id']
-            cursor.execute("INSERT INTO ProblemCount (`PRC_problem`,`PRC_user`) VALUES ('%s','%s')" % (request.json['problemId'],userid))
+            cursor.execute("INSERT INTO ProblemCount (`PRC_problem`,`PRC_user`,`PRC_assent`) VALUES ('%s','%s','%s')" % (request.json['problemId'],userid,request.json['assent']))
             conn.commit()
             cursor.connection.close()
             return jsonify({'serviceCode':0, 'data': None, 'exception': None})
