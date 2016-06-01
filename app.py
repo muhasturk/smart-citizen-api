@@ -14,7 +14,7 @@ mysql.init_app(app)
 
 keysForLogin = ['email','password']
 keysForRegister = ['fullName','email','password','deviceToken']
-keysForAccept = ['email','password','problemId','assent']
+keysForAccept = ['email','password','reportId','type']
 keysForReport = ['email','password','longitude','latitude','title','description','categoryId','imageUrl']
 
 def check_auth_for_modules(email,password):
@@ -341,24 +341,24 @@ def acceptReport():
                    for i, value in enumerate(row)) for row in cursor.fetchall()]
         if result:
             userid = result[0]['USR_id']
-            cursor.execute("SELECT PRC_assent FROM ProblemCount WHERE PRC_user ='%d' and PRC_problem ='%d' " % (userid,request.json['problemId']))
+            cursor.execute("SELECT PRC_assent FROM ProblemCount WHERE PRC_user ='%d' and PRC_problem ='%d' " % (userid,request.json['reportId']))
             vote = [dict((cursor.description[i][0], value) \
                        for i, value in enumerate(row)) for row in cursor.fetchall()]
             if vote:
-                cursor.execute("UPDATE ProblemCount SET PRC_assent = '%d' WHERE PRC_problem='%d' and PRC_user = '%d' " % (request.json['assent'],request.json['problemId'],userid))
+                cursor.execute("UPDATE ProblemCount SET PRC_assent = '%d' WHERE PRC_problem='%d' and PRC_user = '%d' " % (request.json['type'],request.json['reportId'],userid))
                 conn.commit()
                 cursor.connection.close()
                 return jsonify({'serviceCode':0, 'data': None, 'exception': None})
             else:
-                cursor.execute("INSERT INTO ProblemCount (`PRC_problem`,`PRC_user`,`PRC_assent`) VALUES ('%s','%s','%s')" % (request.json['problemId'],userid,request.json['assent']))
+                cursor.execute("INSERT INTO ProblemCount (`PRC_problem`,`PRC_user`,`PRC_assent`) VALUES ('%s','%s','%s')" % (request.json['reportId'],userid,request.json['type']))
                 conn.commit()
                 cursor.connection.close()
                 return jsonify({'serviceCode':0, 'data': None, 'exception': None})
         else:
             cursor.connection.close()
             return jsonify({'serviceCode': 1, 'data': None, 'exception':{'exceptionCode':7,'exceptionMessage':'E-mail or password incorrect'}})
-    except:
-        return jsonify({'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query'}})
+    except Exception as e:
+        return jsonify({'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query - ' + str(e)}})
 
 @app.route('/getReportsByUserId', methods=['GET'])
 def getReportDetailsByUserId():
