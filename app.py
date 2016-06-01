@@ -6,8 +6,8 @@ app = Flask(__name__)
 
 mysql = MySQL()
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'mustafaengin'
-app.config['MYSQL_DATABASE_DB'] = 'smart'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'root'
+app.config['MYSQL_DATABASE_DB'] = 'smart_citizen'
 app.config['MYSQL_DATABASE_HOST'] = '127.0.0.1'
 app.config['MYSQL_DATABASE_CHARSET'] = 'utf8'
 mysql.init_app(app)
@@ -329,7 +329,7 @@ def getReports():
 
 
 @app.route('/voteReport', methods=['POST'])
-def acceptReport():
+def voteReport():
     if not request.json:
         abort(400)
     for key in keysForAccept:
@@ -361,6 +361,41 @@ def acceptReport():
             return jsonify({'serviceCode': 1, 'data': None, 'exception':{'exceptionCode':7,'exceptionMessage':'E-mail or password incorrect'}})
     except Exception as e:
         return jsonify({'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query - ' + str(e)}})
+
+@app.route('/authorizedReaction', methods=['POST'])
+def authorizedReaction():
+    if not request.json:
+        abort(400)
+    for key in keysForAccept:
+        if not key in request.json:
+            abort(400)
+    try:
+        conn = mysql.connect()
+        cursor = conn.cursor()
+        cursor.execute("SELECT USR_id FROM User WHERE USR_email ='%s' and USR_password ='%s' and USR_activated = 1" % (request.json['email'],request.json['password']))
+        result = [dict((cursor.description[i][0], value) \
+                   for i, value in enumerate(row)) for row in cursor.fetchall()]
+        if result:
+            userid = result[0]['USR_id']
+            if request.json['type'] == 2:
+                cursor.execute("UPDATE Problem SET PRB_authorizedUser = '%d', PRB_updatedDate = CURDATE(), PRB_state = 2 WHERE PRB_id = '%d' " % (userid,request.json['reportId']))
+                conn.commit()
+                cursor.connection.close()
+                return jsonify({'serviceCode':0, 'data': None, 'exception': None})
+            elif request.json['type'] == 3:
+                cursor.execute("UPDATE Problem SET PRB_authorizedUser = '%d', PRB_updatedDate = CURDATE(), PRB_state = 3 WHERE PRB_id = '%d' " % (userid,request.json['reportId']))
+                conn.commit()
+                cursor.connection.close()
+                return jsonify({'serviceCode':0, 'data': None, 'exception': None})
+            else:
+                cursor.connection.close()
+                return jsonify({'serviceCode':0, 'data': None, 'exception': {'exceptionCode':10,'exceptionMessage':'invalid type value. 2 or 3'}})
+        else:
+            cursor.connection.close()
+            return jsonify({'serviceCode': 1, 'data': None, 'exception':{'exceptionCode':7,'exceptionMessage':'E-mail or password incorrect'}})
+    except Exception as e:
+        return jsonify({'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query - ' + str(e)}})
+
 
 @app.route('/getReportsByUserId', methods=['GET'])
 def getReportDetailsByUserId():
@@ -427,5 +462,5 @@ def not_found(error):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80 ,debug=True)
+    app.run(debug=True)
     #host='0.0.0.0', port=80 ,
