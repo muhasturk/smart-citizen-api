@@ -371,8 +371,8 @@ def getReportDetailsByUserId():
 
     else:
         try:
-            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as type, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description,\
-                Problem.`PRB_count` as count, `ProblemImage`.`PRI_imageUrl` as imageUrl, ProblemState.`PRS_name` as status, ProblemState.`PRS_id` as statusId,  Category.`CAT_id` as typeId \
+            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as category, Problem.`PRB_title` as title, Problem.`PRB_explanation` as description,\
+                Problem.`PRB_count` as count, `ProblemImage`.`PRI_imageUrl` as imageUrl, ProblemState.`PRS_name` as status, ProblemState.`PRS_id` as statusId,  Category.`CAT_id` as categoryId \
                 from Problem, Category, ProblemState, ProblemImage where Problem.`PRB_category` = Category.`CAT_id` and \
                 ProblemImage.`PRI_problem` = Problem.`PRB_id` and Problem.`PRB_state` = ProblemState.`PRS_id` and\
                  Problem.`PRB_reportingUser` = '%s' ORDER BY statusId ASC" % (userId))
