@@ -120,7 +120,7 @@ def get_report_details_for_modules(reportID):
             if reports:
                 jsonMessage = {'serviceCode':0, 'data': reports[0], 'exception': None}
             else:
-                jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 5, 'exceptionMessage': authorized}}
+                jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 5, 'exceptionMessage': 'There is no report for this reportID'}}
         except Exception as e:
             jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query2'+str(e)}}
     return jsonMessage
