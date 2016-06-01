@@ -6,8 +6,8 @@ app = Flask(__name__)
 
 mysql = MySQL()
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'root'
-app.config['MYSQL_DATABASE_DB'] = 'smart_citizen'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'mustafaengin'
+app.config['MYSQL_DATABASE_DB'] = 'smart'
 app.config['MYSQL_DATABASE_HOST'] = '127.0.0.1'
 app.config['MYSQL_DATABASE_CHARSET'] = 'utf8'
 mysql.init_app(app)
@@ -462,5 +462,5 @@ def not_found(error):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=80 ,debug=True)
     #host='0.0.0.0', port=80 ,
