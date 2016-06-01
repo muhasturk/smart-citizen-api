@@ -376,19 +376,23 @@ def getReportDetailsByUserId():
                 from Problem, Category, ProblemState, ProblemImage where Problem.`PRB_category` = Category.`CAT_id` and \
                 ProblemImage.`PRI_problem` = Problem.`PRB_id` and Problem.`PRB_state` = ProblemState.`PRS_id` and\
                  Problem.`PRB_reportingUser` = '%s' ORDER BY statusId ASC" % (userId))
-            zero = {}
-            one = {}
-            two = {}
-            three = {}
+            zero = []
+            one = []
+            two = []
+            three = []
             for row in cursor.fetchall():
                 if row[7] == 0:
-                    zero.update(dict((cursor.description[a][0], value) for a, value in enumerate(row)))
+                    zero.append(dict((cursor.description[i][0], value) \
+                           for i, value in enumerate(row)))
                 elif row[7] == 1:
-                    one.update(dict((cursor.description[a][0], value) for a, value in enumerate(row)))
+                    one.append(dict((cursor.description[i][0], value) \
+                           for i, value in enumerate(row)))
                 elif row[7] == 2:
-                    two.update(dict((cursor.description[a][0], value) for a, value in enumerate(row)))
+                    two.append(dict((cursor.description[i][0], value) \
+                           for i, value in enumerate(row)))
                 elif row[7] == 3:
-                    three.update(dict((cursor.description[a][0], value) for a, value in enumerate(row)))
+                    three.append(dict((cursor.description[i][0], value) \
+                           for i, value in enumerate(row)))
 
             reports['0'] = zero
             reports['1'] = one
