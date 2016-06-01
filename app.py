@@ -217,9 +217,10 @@ def getUnorderedReportsByType():
 
     if reportType == "0" or reportType == None:
         try:
-            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as type, Category.`CAT_id` as typeId, Problem.`PRB_title` as title, \
-                Problem.`PRB_explanation` as description, Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude from Problem, Location, Category\
-                where Problem.`PRB_location` = Location.`LOC_id` and Problem.`PRB_category` = Category.`CAT_id`")
+            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as category, Category.`CAT_id` as CategoryId, Problem.`PRB_title` as title, \
+                Problem.`PRB_explanation` as description, Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude, \
+                Problem.`PRB_state` as statusId, ProblemState.`PRS_name` as status from Problem, Location, Category, ProblemState\
+                where Problem.`PRB_location` = Location.`LOC_id` and Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_state` = ProblemState.`PRS_id`")
             reports = [dict((cursor.description[i][0], value) \
                    for i, value in enumerate(row)) for row in cursor.fetchall()]
             jsonMessage = {'serviceCode':0, 'data': reports, 'exception': None}
@@ -228,17 +229,18 @@ def getUnorderedReportsByType():
 
     else:
         try:
-            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as type, Category.`CAT_id` as typeId, Problem.`PRB_title` as title, \
-                Problem.`PRB_explanation` as description, Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude from Problem, Location, Category\
-                where Problem.`PRB_location` = Location.`LOC_id` and Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_category` = '%s'" % (reportType))
+            cursor.execute("Select Problem.`PRB_id` as id, Category.`CAT_name` as category, Category.`CAT_id` as categoryId, Problem.`PRB_title` as title, \
+                Problem.`PRB_explanation` as description, Location.`LOC_latitude` as latitude, Location.`LOC_longitude` as longitude, \
+                Problem.`PRB_state` as statusId, ProblemState.`PRS_name` as status from Problem, Location, Category, ProblemState\
+                where Problem.`PRB_location` = Location.`LOC_id` and Problem.`PRB_category` = Category.`CAT_id` and Problem.`PRB_state` = ProblemState.`PRS_id` and Problem.`PRB_category` = '%s'" % (reportType))
             reports = [dict((cursor.description[i][0], value) \
                    for i, value in enumerate(row)) for row in cursor.fetchall()]
             if reports:
                 jsonMessage = {'serviceCode':0, 'data': reports, 'exception': None}
             else:
                 jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 6, 'exceptionMessage': 'There is no report for this reportType'}}
-        except:
-            jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query'}}
+        except Exception as e:
+            jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query - '+str(e)}}
 
     cursor.connection.close()
     return jsonify(jsonMessage)

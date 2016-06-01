@@ -7,7 +7,7 @@
 #
 # Host: 127.0.0.1 (MySQL 5.6.24)
 # Database: smart_citizen
-# Generation Time: 2016-05-31 19:47:23 +0000
+# Generation Time: 2016-06-01 08:57:29 +0000
 # ************************************************************
 
 
@@ -41,8 +41,11 @@ VALUES
 	(3,'Kanalizasyon'),
 	(4,'Doğalgaz'),
 	(5,'Telefon'),
-	(6,'Yol Çalışması'),
-	(7,'Çevre Temizliği');
+	(6,'Yol Sorunu'),
+	(7,'Çevre Kirliliği'),
+	(8,'İllegal Park'),
+	(9,'Evsiz İnsan'),
+	(10,'Sokak Hayvanı');
 
 /*!40000 ALTER TABLE `Category` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -187,7 +190,10 @@ VALUES
 	(1,1,40.990755,28.716683),
 	(3,1,40.990347,28.719055),
 	(35,1,40.995466,28.714455),
-	(36,1,40.996431,28.706701);
+	(36,1,40.996431,28.706701),
+	(37,1,40.995466,28.714455),
+	(38,1,40.995466,28.714455),
+	(39,1,40.995466,28.714455);
 
 /*!40000 ALTER TABLE `Location` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -256,10 +262,13 @@ LOCK TABLES `Problem` WRITE;
 
 INSERT INTO `Problem` (`PRB_id`, `PRB_category`, `PRB_location`, `PRB_state`, `PRB_title`, `PRB_explanation`, `PRB_authorizedUser`, `PRB_count`, `PRB_createdDate`, `PRB_updatedDate`, `PRB_reportingUser`)
 VALUES
-	(4,7,3,0,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',23,9,'2016-03-18','2016-03-25',24),
-	(10,1,1,1,'Elektrik Direği Işığı','Sokağın başındaki elektrik direğinin ışığı yanmıyor',NULL,10,'2016-03-20','2016-03-25',23),
+	(4,7,3,1,'Çöp Kovası Eksikliği','Sokaktaki Çöp kutusu yetersiz',23,10,'2016-03-18','2016-03-25',24),
+	(10,1,1,1,'Elektrik Direği Işığı','Sokağın başındaki elektrik direğinin ışığı yanmıyor',NULL,11,'2016-03-20','2016-03-25',23),
 	(38,1,35,2,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,15,'2016-05-05','2016-05-25',23),
-	(39,3,36,3,'Kanalizasyon tıkalı','Sokakta kanalizasyon tıkandı. Logar kapağını üzerinden su taşıyor',NULL,15,'2016-05-12','2016-05-25',23);
+	(39,3,36,3,'Kanalizasyon tıkalı','Sokakta kanalizasyon tıkandı. Logar kapağını üzerinden su taşıyor',NULL,15,'2016-05-12','2016-05-25',23),
+	(40,1,37,0,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,1,'2016-06-01','2016-06-01',23),
+	(41,1,38,0,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,0,'2016-06-01','2016-06-01',23),
+	(42,1,39,0,'Elektrik direği problemi','Sokağın ortasında bulunan elektrik direği arızalı',NULL,0,'2016-06-01','2016-06-01',32);
 
 /*!40000 ALTER TABLE `Problem` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -290,13 +299,30 @@ CREATE TABLE `ProblemCount` (
   CONSTRAINT `problemcount_ibfk_2` FOREIGN KEY (`PRC_problem`) REFERENCES `Problem` (`PRB_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_turkish_ci;
 
+LOCK TABLES `ProblemCount` WRITE;
+/*!40000 ALTER TABLE `ProblemCount` DISABLE KEYS */;
+
+INSERT INTO `ProblemCount` (`PRC_user`, `PRC_problem`, `PRC_assent`)
+VALUES
+	(23,4,1),
+	(23,10,1),
+	(23,40,1);
+
+/*!40000 ALTER TABLE `ProblemCount` ENABLE KEYS */;
+UNLOCK TABLES;
 
 DELIMITER ;;
 /*!50003 SET SESSION SQL_MODE="STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION" */;;
-/*!50003 CREATE */ /*!50017 DEFINER=`root`@`localhost` */ /*!50003 TRIGGER `voteReport` AFTER INSERT ON `ProblemCount` FOR EACH ROW IF new.PRC_assent = 1 THEN
+/*!50003 CREATE */ /*!50017 DEFINER=`root`@`localhost` */ /*!50003 TRIGGER `voteReportInsert` AFTER INSERT ON `ProblemCount` FOR EACH ROW IF new.PRC_assent = 1 THEN
 		UPDATE Problem SET PRB_count = PRB_count + 1 WHERE new.PRC_problem = PRB_id;
 ELSE
 		UPDATE Problem SET PRB_count = PRB_count - 1 WHERE new.PRC_problem = PRB_id;
+END IF */;;
+/*!50003 SET SESSION SQL_MODE="STRICT_TRANS_TABLES,NO_ENGINE_SUBSTITUTION" */;;
+/*!50003 CREATE */ /*!50017 DEFINER=`root`@`localhost` */ /*!50003 TRIGGER `vote` BEFORE UPDATE ON `ProblemCount` FOR EACH ROW IF new.PRC_assent = 1 and old.PRC_assent = 0 THEN
+		UPDATE Problem SET PRB_count = PRB_count + 2 WHERE new.PRC_problem = PRB_id;
+ELSEIF new.PRC_assent = 0 and old.PRC_assent = 1 THEN
+		UPDATE Problem SET PRB_count = PRB_count - 2 WHERE new.PRC_problem = PRB_id;
 END IF */;;
 DELIMITER ;
 /*!50003 SET SESSION SQL_MODE=@OLD_SQL_MODE */;
@@ -324,7 +350,10 @@ VALUES
 	(15,4,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
 	(16,10,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
 	(17,38,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
-	(23,39,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png');
+	(23,39,'https://s3-us-west-2.amazonaws.com/smart-citizen/6B31782C-26E6-41FA-978F-543C062BB6BF-1968-000001C22F5451E1.png'),
+	(24,40,'https://aws.com/'),
+	(25,41,'https://aws.com/'),
+	(26,42,'https://aws.com/');
 
 /*!40000 ALTER TABLE `ProblemImage` ENABLE KEYS */;
 UNLOCK TABLES;
