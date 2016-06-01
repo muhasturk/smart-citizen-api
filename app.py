@@ -376,20 +376,32 @@ def getReportDetailsByUserId():
                 from Problem, Category, ProblemState, ProblemImage where Problem.`PRB_category` = Category.`CAT_id` and \
                 ProblemImage.`PRI_problem` = Problem.`PRB_id` and Problem.`PRB_state` = ProblemState.`PRS_id` and\
                  Problem.`PRB_reportingUser` = '%s' ORDER BY statusId ASC" % (userId))
-            temp = ""
+            zero = {}
+            one = {}
+            two = {}
+            three = {}
             for row in cursor.fetchall():
-                if temp == row[7]:
-                    reports[row[7]].append(dict((cursor.description[a][0], value) for a, value in enumerate(row)))
-                else:
-                    reports[row[7]] = [dict((cursor.description[i][0], value) for i, value in enumerate(row))]
-                    temp = row[7]
+                if row[7] == 0:
+                    zero.update(dict((cursor.description[a][0], value) for a, value in enumerate(row)))
+                elif row[7] == 1:
+                    one.update(dict((cursor.description[a][0], value) for a, value in enumerate(row)))
+                elif row[7] == 2:
+                    two.update(dict((cursor.description[a][0], value) for a, value in enumerate(row)))
+                elif row[7] == 3:
+                    three.update(dict((cursor.description[a][0], value) for a, value in enumerate(row)))
+
+            reports['0'] = zero
+            reports['1'] = one
+            reports['2'] = two
+            reports['3'] = three
+
 
             if reports:
                 jsonMessage = {'serviceCode':0, 'data': reports, 'exception': None}
             else:
                 jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 10, 'exceptionMessage': 'There is no report for this userId'}}
-        except:
-            jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query'}}
+        except Exception as e:
+            jsonMessage = {'serviceCode':1, 'data': None, 'exception': {'exceptionCode': 8, 'exceptionMessage': 'Error in SQL Query' + str(e)}}
 
     cursor.connection.close()
     return jsonify(jsonMessage)
