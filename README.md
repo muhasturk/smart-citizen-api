@@ -15,7 +15,6 @@ python app.py
 
 #### Author
 Mustafa Hastürk
-*hi@mustafahasturk.com
 
 ##### License
 MIT 
